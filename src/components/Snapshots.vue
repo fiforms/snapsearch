@@ -24,6 +24,9 @@
 	    <label>
 	      <input name="sortradio" type="radio" v-model="sort" value="random" @click="reSort">
 	      Random
+	    </label>&nbsp;&nbsp;&nbsp;&nbsp;
+	    <label>
+	      <input name="showall" type="checkbox" v-model="showall"> Show All Hits
 	    </label>
 	    </div>
 	    <a href="https://snapshots.vrbm.org/"><img src="/searchicon.png" class="logo" /></a>
@@ -67,7 +70,7 @@
 	searchresults: null,
 	hit: null,
 	sort: "random",
-	randomness: [1,2,3,4],
+	showall: false,
       };
     },
     watch: {
@@ -78,6 +81,9 @@
 	    sort(newSort) {
 	            this.updateUrl();
 	            this.reSort();
+	    },
+	    showall(newShow) {
+	        this.updateSearch();
 	    }
     },
     methods: {
@@ -96,6 +102,10 @@
         updateSearch (event) {
 	    var res = new Array();
 	    var count = 0
+	    if(this.searchterm.length < 4 && this.showall) {
+	        this.showall = false;
+	        this.$forceUpdate();
+	    }
 	    if(this.snapshots) {
 		    for(let i = 0; i < this.snapshots.length; i++) {
 			    let terms = this.searchterm.toLowerCase().split(" ")
@@ -105,7 +115,7 @@
 				    res.push(row);
 				    count++
 			    }
-			    if(count >= 100) {
+			    if(count >= 100 && !this.showall) {
 				break;
 			    }
 		    }
