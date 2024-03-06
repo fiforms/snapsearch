@@ -21,6 +21,7 @@
 			  <img class="searchthumb" v-bind:src="'thumbs/' + row.letter + '/' + row.md5 + '.webp'" @click="setHit(row)" />
 		  </div>
 	  </div>
+          <div class="overlay" v-if="hit" @click="clearHit()">&nbsp;</div>
 	  <div class="hitdetails" v-if="hit">
 	      <span class="close" @click="clearHit()">X</span>
 	                    <img v-bind:src="'thumbs/' + hit.letter + '/' + hit.md5 + '.768.webp'" /><br />
@@ -175,6 +176,9 @@
       border: 1px solid #ccc;
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
       z-index: 1000;
+      max-height: 95vh; /* Set the maximum height as a percentage of the viewport height */
+      overflow-y: auto; /* Enable vertical scrollbar when content exceeds the max height */
+
     }
     /* Add a close button if needed */
     .close {
@@ -183,4 +187,14 @@
       right: 10px;
       cursor: pointer;
     }
+.overlay {
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); /* Semi-transparent grey background */
+  z-index: 999; /* Z-index lower than modal to ensure it's behind */
+}
 </style>
