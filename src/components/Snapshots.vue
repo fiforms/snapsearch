@@ -9,7 +9,7 @@
 	      </a>
 	    </div>
 	    <div class="searchbox">
-	    <input v-model="searchterm" id="searchinput" /><br />
+	    <input v-model="searchterm" id="searchinput" placeholder="Search..." /><br />
 	    
 	    <label>
 	      <input name="sortradio" type="radio" v-model="sort" value="path">
@@ -179,6 +179,7 @@
           .then(res => {
             this.snapshots = res.data;
             this.reSort();
+            document.getElementById('searchinput').focus();
           })
     },
   }
