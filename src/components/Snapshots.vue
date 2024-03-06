@@ -1,6 +1,21 @@
 <template>
   <div class="container">
-	  <h3> Snapshot Search: <input v-model="searchterm" /></h3>
+	  <div class="parametercontainer"> Snapshot Search: <input v-model="searchterm" name="search" /> Sort: 
+	    <label>
+	      <input name="sortradio" type="radio" v-model="sort" value="path" @change="reSort">
+	      Sort By File Path
+	    </label>
+
+	    <label>
+	      <input name="sortradio" type="radio" v-model="sort" value="date" @change="reSort">
+	      Sort By Date
+	    </label>
+
+	    <label>
+	      <input name="sortradio" type="radio" v-model="sort" value="random" @change="reSort">
+	      Random Sort
+	    </label>
+	  </div>
 	  <div class="searchcontainer">
 		  <div class="searchtile" v-for="row in searchresults">
 			  <img class="searchthumb" v-bind:src="'thumbs/' + row.letter + '/' + row.md5 + '.webp'" @click="setHit(row)" />
@@ -25,7 +40,7 @@
 
 <script>
   import axios from 'axios';
-
+  
   export default {
     name: 'Snapshots',
     data() {
@@ -34,6 +49,8 @@
 	searchterm: "",
 	searchresults: null,
 	hit: null,
+	sort: "",
+	randomness: [1,2,3,4],
       };
     },
     watch: {
@@ -69,8 +86,7 @@
 			break;
 		    }
 	    }
-		this.searchresults = res;
-	   
+	    this.searchresults = res;
 	},
 	setHit(row) {
 	    this.hit = row;
@@ -90,6 +106,27 @@
 	clearHit() {
 	    this.hit = null;
 	},
+	reSort() {
+	    this.snapshots.sort(this.sortCompare)
+	    this.updateSearch()
+	},
+	sortCompare(a,b) {
+	    if(this.sort == "path") {
+	        if(a.dir == b.dir) {
+	            return a.filename < b.filename ? -1 : 1
+	        }
+	        else {
+	            return a.dir < b.dir ? -1 : 1
+	        }
+	    }
+	    else if(this.sort == "date") {
+	        return a.date > b.date ? -1 : 1
+	    }
+	    else {
+	        let num = Math.random() - 0.5
+	        return num
+	    }
+	},
     },
     created: function() {
       axios
@@ -102,7 +139,7 @@
 </script>
 
 <style>
-  h3 {
+  .parametercontainer {
     margin-bottom: 5%;
   }
   .searchcontainer
@@ -120,7 +157,14 @@
       height: 276px;
       margin: 5px; /* Adjust as needed */
       box-sizing: border-box;
+      cursor: pointer;
+      background-color: #999999;
   }
+  .searechtile:hover
+  {
+      background-color: #666666;
+  }
+  
     .hitdetails {
       position: fixed;
       top: 50%;
