@@ -174,8 +174,12 @@
         if (searchFromUrl) {
           this.searchterm = searchFromUrl;
         }
+        const sortFromUrl = urlParams.get('sort');
+        if (sortFromUrl) {
+          this.sort = sortFromUrl;
+        }
         axios
-          .get('/thumbs/snapshots.json')
+          .get('/thumbs/snapshots.json.gz')
           .then(res => {
             this.snapshots = res.data;
             this.reSort();
