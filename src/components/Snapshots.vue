@@ -179,7 +179,7 @@
           this.sort = sortFromUrl;
         }
         axios
-          .get('/thumbs/snapshots.json.gz')
+          .get('/thumbs/snapshots.json')
           .then(res => {
             this.snapshots = res.data;
             this.reSort();
