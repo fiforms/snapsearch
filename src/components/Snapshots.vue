@@ -124,17 +124,17 @@
 	},
 	setHit(row) {
 	    this.hit = row;
-	    		    this.hit.medlink = "https://cloud.fiforms.org/dan_cloud/index.php/s/tSkY7gainasSTpD/download?path=" +
+	    		    this.hit.medlink = "https://content.vrbm.org/c/index.php/s/rkeGb5EdYNzb33t/download?path=" +
 			        encodeURIComponent("/" + row.dir) +
 			        "&files=" +
 			        encodeURIComponent(row.filename.replace(/\.png$/,".jpg").replace(/\.webp$/,".jpg"));
-			    this.hit.biglink = "https://cloud.fiforms.org/dan_cloud/index.php/s/TrjZLnLdf7QHcBY/download?path=" +
+			    this.hit.biglink = "https://content.vrbm.org/c/index.php/s/P8qdzYonYrAapXj/download?path=" +
 			        encodeURIComponent("/" + row.dir) +
 			        "&files=" +
 			        encodeURIComponent(row.filename);
-			    this.hit.meddirlink = "https://cloud.fiforms.org/dan_cloud/index.php/s/tSkY7gainasSTpD?path=" + 
+			    this.hit.meddirlink = "https://content.vrbm.org/c/index.php/s/rkeGb5EdYNzb33t?path=" + 
 			        encodeURIComponent("/" + row.dir)
-			    this.hit.bigdirlink = "https://cloud.fiforms.org/dan_cloud/index.php/s/TrjZLnLdf7QHcBY?path=" + 
+			    this.hit.bigdirlink = "https://content.vrbm.org/c/index.php/s/P8qdzYonYrAapXj?path=" + 
 			        encodeURIComponent("/" + row.dir)
 	},
 	clearHit() {
