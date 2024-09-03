@@ -13,7 +13,7 @@
 	    
 	    <label>
 	      <input name="sortradio" type="radio" v-model="sort" value="path">
-	      Folder Older
+	      Folder Order
 	    </label>
 
 	    <label>
@@ -28,12 +28,19 @@
 	    <label>
 	      <input name="showall" type="checkbox" v-model="showall"> Show All Hits
 	    </label>
+	    <label>
+		    &nbsp;&nbsp;&nbsp;
+		    <select name="typefilter" v-model="typefilter">
+			    <option value="">{Filter by Type}</option>
+			    <option v-for="type in typelist">{{type}}</option>
+		    </select>
+	    </label>
 	    </div>
 	    <a href="https://snapshots.vrbm.org/"><img src="/searchicon.png" class="logo" /></a>
 	  </div>
 	  <div class="searchcontainer">
 		  <div class="searchtile" v-for="row in searchresults" @click="setHit(row)">
-			  <img class="searchthumb" v-bind:src="'thumbs/' + row.letter + '/' + row.md5 + '.webp'" @click="setHit(row)" />
+			  <img class="searchthumb" v-bind:src="row.src + '/' + row.letter + '/' + row.md5 + '.webp'" @click="setHit(row)" />
 		  </div>
 	  </div>
           <div class="overlay" v-if="hit" @click="clearHit()">&nbsp;</div>
@@ -42,15 +49,22 @@
 	      <span class="close" @click="clearHit()">X</span>
 	      </div>
 	      <div class="innerbody">
-	                    <img v-bind:src="'thumbs/' + hit.letter + '/' + hit.md5 + '.768.webp'" /><br />
-			    {{hit.filename}}<br />
-			    {{hit.desc}}<br />
-			    {{hit.dir}}<br />
-			    <a :href="hit.medlink" target="_blank">Download Medium</a><br />
-			    <a :href="hit.biglink" target="_blank">Download Large</a><br />
+	                    <img v-bind:src="hit.src + '/' + hit.letter + '/' + hit.md5 + '.768.webp'" /><br />
+			    <table>
+				    <tr><th>Filename</th><td>{{hit.filename}}</td></tr>
+				    <tr><td colspan="2">{{hit.desc}}</td></tr>
+				    <tr><th>Type</th><td>{{hit.arttype}}</td></tr>
+				    <tr><th>Resolution</th><td>{{hit.width}}x{{hit.height}}</td></tr>
+				    <tr><th>License</th><td>{{hit.license}}</td></tr>
+				    <tr><th>Attribution</th><td>{{hit.attribution}}</td></tr>
+				    <tr><th>Folder</th><td>{{hit.dir}}</td></tr>
+				    <tr><td colspan="2">
+			    <a :href="hit.medurl" v-if="hit.medurl" target="_blank">Download Medium</a><br />
+			    <a :href="hit.largeurl" target="_blank">Download Large</a><br />
 			    <a v-if="hit.sourceurl" :href="hit.sourceurl" target="_blank">Image Source</a><br />
-			    <a :href="hit.meddirlink" target="_blank">Browse Folder (Medium Resolution)</a><br />
+			    <a :href="hit.meddirlink" v-if="hit.meddirlink" target="_blank">Browse Folder (Medium Resolution)</a><br />
 			    <a :href="hit.bigdirlink" target="_blank">Browse Folder (High Resolution)</a><br />
+					    </td></tr></table>
 	      </div>
 	  </div>
 		  
@@ -65,12 +79,14 @@
     name: 'Snapshots',
     data() {
       return {
-        snapshots: null,
+        snapshots: [],
 	searchterm: "",
 	searchresults: null,
 	hit: null,
-	sort: "random",
+	sort: "default",
 	showall: false,
+	typefilter: "",
+	typelist: [],
       };
     },
     watch: {
@@ -83,8 +99,12 @@
 	            this.reSort();
 	    },
 	    showall(newShow) {
-	        this.updateSearch();
-	    }
+	            this.updateSearch();
+	    },
+	    typefilter(newType) {
+		    this.updateSearch();
+	            this.updateUrl();
+	    },
     },
     methods: {
         match (terms,i) {
@@ -102,18 +122,23 @@
         updateSearch (event) {
 	    var res = new Array();
 	    var count = 0
-	    if(this.searchterm.length < 4 && this.showall) {
+	    if(this.searchterm.length >= 3 && this.sort == "default") {
+		    this.sort = "path";
+	    }
+	    if(this.searchterm.length < 3 && this.showall) {
 	        this.showall = false;
 	        this.$forceUpdate();
 	    }
-	    if(this.snapshots) {
+	    if(this.snapshots.length > 0) {
 		    for(let i = 0; i < this.snapshots.length; i++) {
 			    let terms = this.searchterm.toLowerCase().split(" ")
 			    if(this.match(terms,i)) {
 				    let row=this.snapshots[i];
-				    row.letter = row.md5.substring(0,1);
-				    res.push(row);
-				    count++
+				    if(this.typefilter == "" || row.arttype == this.typefilter) {
+				        row.letter = row.md5.substring(0,1);
+				        res.push(row);
+				        count++
+				    }
 			    }
 			    if(count >= 100 && !this.showall) {
 				break;
@@ -124,18 +149,6 @@
 	},
 	setHit(row) {
 	    this.hit = row;
-	    		    this.hit.medlink = "https://content.vrbm.org/c/index.php/s/rkeGb5EdYNzb33t/download?path=" +
-			        encodeURIComponent("/" + row.dir) +
-			        "&files=" +
-			        encodeURIComponent(row.filename.replace(/\.png$/,".jpg").replace(/\.webp$/,".jpg"));
-			    this.hit.biglink = "https://content.vrbm.org/c/index.php/s/P8qdzYonYrAapXj/download?path=" +
-			        encodeURIComponent("/" + row.dir) +
-			        "&files=" +
-			        encodeURIComponent(row.filename);
-			    this.hit.meddirlink = "https://content.vrbm.org/c/index.php/s/rkeGb5EdYNzb33t?path=" + 
-			        encodeURIComponent("/" + row.dir)
-			    this.hit.bigdirlink = "https://content.vrbm.org/c/index.php/s/P8qdzYonYrAapXj?path=" + 
-			        encodeURIComponent("/" + row.dir)
 	},
 	clearHit() {
 	    this.hit = null;
@@ -166,6 +179,12 @@
           const baseUrl = window.location.href.split('#')[0];
           window.location.href = `${baseUrl}#q=${this.searchterm}&sort=${this.sort}`;
         },
+        addArtType: function(newType) {
+	    if(!this.typelist.includes(newType)) {
+		    this.typelist.push(newType);
+		    this.typelist.sort();
+	    }
+        },
     },
     created: function() {
         // Initialize search based on URL parameter
@@ -181,7 +200,22 @@
         axios
           .get('/thumbs/snapshots.json')
           .then(res => {
-            this.snapshots = res.data;
+            for(let i = 0; i < res.data.length; i++) {
+		    res.data[i].src = "thumbs";
+		    this.addArtType(res.data[i].arttype);
+	    }
+            this.snapshots = this.snapshots.concat(res.data);
+            this.reSort();
+            document.getElementById('searchinput').focus();
+          })
+        axios
+          .get('/illustrations/snapshots.json')
+          .then(res => {
+            for(let i = 0; i < res.data.length; i++) {
+		    res.data[i].src = "illustrations";
+		    this.addArtType(res.data[i].arttype);
+	    }
+            this.snapshots = this.snapshots.concat(res.data);
             this.reSort();
             document.getElementById('searchinput').focus();
           })

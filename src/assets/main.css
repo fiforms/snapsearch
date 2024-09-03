@@ -1,3 +1,8 @@
 @import './base.css';
 
+th {
+	font-weight: bold;
+	background-color: #bbbbbb;
+}
+
 
