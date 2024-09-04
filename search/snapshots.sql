@@ -2,6 +2,7 @@
 
 CREATE TABLE snapshots (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    collection VARCHAR(100) NOT NULL,
     filename VARCHAR(1000) NOT NULL,
     dir VARCHAR(1000) NOT NULL,
     bnum VARCHAR(50),
@@ -21,6 +22,7 @@ CREATE TABLE snapshots (
     ftype VARCHAR(50)
 );
 
+CREATE INDEX idx_collection ON snapshots (collection);
 CREATE INDEX idx_license ON snapshots (license);
 CREATE INDEX idx_attribution ON snapshots (attribution);
 CREATE INDEX idx_md5 ON snapshots (md5);
