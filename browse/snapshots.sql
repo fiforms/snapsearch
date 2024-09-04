@@ -29,3 +29,7 @@ CREATE INDEX idx_md5 ON snapshots (md5);
 CREATE INDEX idx_arttype ON snapshots (arttype);
 CREATE INDEX idx_ftype ON snapshots (ftype);
 
+CREATE TABLE reload_log (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    last_reload_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
