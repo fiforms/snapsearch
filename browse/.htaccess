@@ -1,0 +1,7 @@
+# The following line must be added to the apache config
+# AllowEncodedSlashes NoDecode
+
+RewriteEngine On
+RewriteRule ^folder/([^/]+)/(.+)$ folder.php?col=$1&dir=$2 [L]
+RewriteRule ^image/([^/]+)/(.+)$ image.php?md5=$1 [L]
+
