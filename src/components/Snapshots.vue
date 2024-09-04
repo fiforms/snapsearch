@@ -34,7 +34,8 @@
 			    <option value="">{Filter by Type}</option>
 			    <option v-for="type in typelist">{{type}}</option>
 		    </select>
-	    </label>
+	    </label> &nbsp;
+	    <a href="https://content.vrbm.org/browse/" style="color: #999999;">Browse Thumbnails</a>
 	    </div>
 	    <a href="https://snapshots.vrbm.org/"><img src="/searchicon.png" class="logo" /></a>
 	  </div>
