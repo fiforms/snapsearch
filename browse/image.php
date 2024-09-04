@@ -11,7 +11,13 @@
 	}
 
 	checkReload($conn);
-?><html><head><title>Browse Folder</title></head><body><div class="imagepage">
+?><html><head><title>Browse Folder</title>
+<link rel="stylesheet" href="/browse/static.css" />
+</head><body>
+
+<h1><a href="https://snapshots.vrbm.org">Virtual Bible Snapshot Project</a></h1>
+
+<div class="imagepage">
 <?php
 
 	// Prepare the SQL statement
