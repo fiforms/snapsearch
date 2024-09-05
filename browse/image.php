@@ -45,7 +45,7 @@ $stmt->fetch();
     echo "<table class=\"imageinfo\">";
     echo "<tr><th>Filename</th><td>$filename</td></tr>";
     echo "<tr><th>Desc</th><td>$desc</td></tr>";
-    echo "<tr><th>Type </th><td>$ftype </td></tr>";
+    echo "<tr><th>Type </th><td>$arttype </td></tr>";
     echo "<tr><th>Resolution </th><td>$width x $height </td></tr>";
     echo "<tr><th>License </th><td>$license </td></tr>";
     echo "<tr><th>Attribution </th><td>$attribution </td></tr>";
@@ -65,4 +65,9 @@ $stmt->close();
 
 	$conn->close();
 
-?></div></body></html>
+?>
+<tr><td class="siteinfo" colspan="2">
+The Virtual Bible Snapshot Project provides free artwork to illustrate the Bible and Bible topics, including video, photographs, illustrations, and AI Generated artwork. Learn more at <a href="https://snapshots.vrbm.org/">snapshots.vrbm.org</a>.
+</td></tr>
+</table>
+</div></body></html>

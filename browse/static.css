@@ -18,3 +18,11 @@ div.imagepage {
 	margin: 10px;
 	text-align: center;
 }
+
+.siteinfo {
+	padding-top: 2em;
+	font-size: 10pt;
+	font-style: italic;
+	color: #444444;
+	text-align: center;
+}

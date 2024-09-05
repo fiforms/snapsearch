@@ -20,7 +20,7 @@
 <?php
 	$last = "";
 
-	$sql = "select distinct collection, dir from snapshots order by collection, dir";
+	$sql = "select distinct collection, dir from snapshots order by collection desc, dir";
 	$result = $conn->query($sql);
 	while($row = $result->fetch_assoc()) {
 		if($row["collection"] != $last) {
