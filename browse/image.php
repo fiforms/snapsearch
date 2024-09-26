@@ -11,14 +11,6 @@
 	}
 
 	checkReload($conn);
-?><html><head><title>Browse Folder</title>
-<link rel="stylesheet" href="/browse/static.css" />
-</head><body>
-
-<h1><a href="https://snapshots.vrbm.org">Virtual Bible Snapshot Project</a></h1>
-
-<div class="imagepage">
-<?php
 
 	// Prepare the SQL statement
 	$stmt = $conn->prepare("SELECT collection, filename, dir, bnum, md5, `desc`, width, height, license, attribution, medurl, largeurl, meddirlink, bigdirlink, sourceurl, arttype, `date`, ftype FROM snapshots WHERE md5 = ?");
@@ -39,6 +31,16 @@ $stmt->fetch();
     // Print the results
     $letter = substr($md5,0,1);
     $dirurl = urlencode($dir);
+
+    ?><html><head><title><?php echo $filename; ?></title>
+<link rel="stylesheet" href="/browse/static.css" />
+</head><body>
+
+<h1><a href="https://snapshots.vrbm.org">Virtual Bible Snapshot Project</a></h1>
+
+<div class="imagepage">
+<?php
+
     $interactive = "/#q=".urlencode($filename);
     echo "<a href=\"/browse/folder/$collection/$dirurl\">Return to folder listing for $dir</a><br /><a href=\"/browse/\">Return to All Folder Listing</a><br />";
     echo "<a href=\"$interactive\"><img src=\"/$collection/$letter/$md5.768.webp\" /></a>";
@@ -67,7 +69,7 @@ $stmt->close();
 
 ?>
 <tr><td class="siteinfo" colspan="2">
-The Virtual Bible Snapshot Project provides free artwork to illustrate the Bible and Bible topics, including video, photographs, illustrations, and AI Generated artwork. Learn more at <a href="https://snapshots.vrbm.org/">snapshots.vrbm.org</a>.
+The Virtual Bible Snapshot Project provides free artwork to illustrate the Bible and Bible topics, including video, photographs, illustrations, and AI Generated artwork. Creative-Commons licensed and public domain sermon graphics for pastors, teachers and more! Learn more at <a href="https://snapshots.vrbm.org/">snapshots.vrbm.org</a>.
 </td></tr>
 </table>
 </div></body></html>
