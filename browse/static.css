@@ -1,0 +1,28 @@
+body {
+
+	background-color: #cccccc;
+}
+
+h1, h2, td, div, th, body {
+	font-family: sans-serif;
+}
+
+.folderlisting td img {
+	margin: 8px;
+}
+
+div.imagepage {
+	border-style: solid;
+	border-width: 2px;
+	padding: 10px;
+	margin: 10px;
+	text-align: center;
+}
+
+.siteinfo {
+	padding-top: 2em;
+	font-size: 10pt;
+	font-style: italic;
+	color: #444444;
+	text-align: center;
+}
