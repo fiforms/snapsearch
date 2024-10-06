@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container" tabindex="0" @keydown.esc="clearHit">
 	  <div class="parametercontainer">
 	    <div class="homelink">
 
@@ -27,6 +27,9 @@
 	    </label>&nbsp;&nbsp;&nbsp;&nbsp;
 	    <label>
 	      <input name="showall" type="checkbox" v-model="showall"> Show All Hits
+	    </label>
+	    <label>
+	      <input name="filterxx" type="checkbox" v-model="filterxx"> Filter Offensive Images
 	    </label>
 	    <label>
 		    &nbsp;&nbsp;&nbsp;
@@ -86,6 +89,7 @@
 	hit: null,
 	sort: "default",
 	showall: false,
+	filterxx: true,
 	typefilter: "",
 	typelist: [],
       };
@@ -102,6 +106,9 @@
 	    showall(newShow) {
 	            this.updateSearch();
 	    },
+	    filterxx(newFilter) {
+	            this.updateSearch();
+	    },
 	    typefilter(newType) {
 		    this.updateSearch();
 	            this.updateUrl();
@@ -110,6 +117,9 @@
     methods: {
         match (terms,i) {
             let found = 0
+	    if(this.snapshots[i].xx == "XX" && this.filterxx) {
+		return 0;
+	    }
             for(let j = 0; j < terms.length; j++) {
                 let term = terms[j]
                 if((this.snapshots[i].dir && this.snapshots[i].dir.toLowerCase().includes(term)) || 
