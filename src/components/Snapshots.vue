@@ -43,9 +43,10 @@
 	    <a href="https://snapshots.vrbm.org/"><img src="/searchicon.png" class="logo" /></a>
 	  </div>
 	  <div class="searchcontainer">
-		  <div class="searchtile" v-for="row in searchresults" @click="setHit(row)">
+		  <div class="searchtile video-thumb" v-for="row in searchresults" @click="setHit(row)">
 		      <a :title="row.filename + ' ' + row.desc">
 			  <img class="searchthumb" v-bind:src="row.src + '/' + row.letter + '/' + row.md5 + '.webp'" @click="setHit(row)" />
+		          <div v-if="row.ftype == 'video'" class="videoicon-overlay">▶</div>
 		      </a>
 		  </div>
 	  </div>
@@ -60,7 +61,7 @@
 	                        <img v-bind:src="hit.src + '/' + hit.letter + '/' + hit.md5 + '.768.webp'" />
 				<div v-if="hit.ftype == 'video'" class="play-overlay" @click="playVideo">▶</div>
 			    </div><br />
-			    <video v-if="isPlaying" v-bind:src="hit.medurl" control autoplay class="video-player"></video><br />
+			    <video v-if="isPlaying" v-bind:src="hit.medurl" controls autoplay class="video-player"></video><br />
 			    <table>
 				    <tr><th>Filename</th><td>{{hit.filename}}</td></tr>
 				    <tr><td colspan="2">{{hit.desc}}</td></tr>
@@ -378,12 +379,22 @@
 	    float: left;
 	    margin-right: 1em;
 	}
+	.videoicon-overlay {
+	  position: absolute;
+	  top: 50%;
+	  left: 50%;
+	  transform: translate(-50%, -50%);
+	  font-size: 40px;
+	  color: white;
+	  text-shadow: 0 0 10px black;
+	  opacity: 0.5;
+	}
 	.play-overlay {
 	  position: absolute;
 	  top: 50%;
 	  left: 50%;
 	  transform: translate(-50%, -50%);
-	  font-size: 48px;
+	  font-size: 56px;
 	  color: white;
 	  text-shadow: 0 0 10px black;
 	  pointer-events: none;
