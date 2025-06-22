@@ -55,7 +55,12 @@
 	      <span class="close" @click="clearHit()">X</span>
 	      </div>
 	      <div class="innerbody">
-	                    <img v-bind:src="hit.src + '/' + hit.letter + '/' + hit.md5 + '.768.webp'" /><br />
+		            
+		            <div v-if="!isPlaying" class="video-thumb" @click="playVideo">
+	                        <img v-bind:src="hit.src + '/' + hit.letter + '/' + hit.md5 + '.768.webp'" />
+				<div v-if="hit.ftype == 'video'" class="play-overlay" @click="playVideo">▶</div>
+			    </div><br />
+			    <video v-if="isPlaying" v-bind:src="hit.medurl" control autoplay class="video-player"></video><br />
 			    <table>
 				    <tr><th>Filename</th><td>{{hit.filename}}</td></tr>
 				    <tr><td colspan="2">{{hit.desc}}</td></tr>
@@ -94,6 +99,7 @@
 	filterxx: true,
 	typefilter: "",
 	typelist: [],
+	isPlaying: false,
       };
     },
     watch: {
@@ -163,8 +169,12 @@
 	setHit(row) {
 	    this.hit = row;
 	},
+	playVideo() {
+	    this.isPlaying = true;
+	},
 	clearHit() {
 	    this.hit = null;
+	    this.isPlaying = false;
 	},
 	reSort() {
 	    this.snapshots.sort(this.sortCompare)
@@ -367,5 +377,27 @@
 	    width: 2em;
 	    float: left;
 	    margin-right: 1em;
+	}
+	.play-overlay {
+	  position: absolute;
+	  top: 50%;
+	  left: 50%;
+	  transform: translate(-50%, -50%);
+	  font-size: 48px;
+	  color: white;
+	  text-shadow: 0 0 10px black;
+	  pointer-events: none;
+	  cursor: pointer;
+	}
+	.video-player {
+	  max-width: 100%;
+	  height: auto;
+	}
+	.video-thumb {
+	  position: relative;
+	  display: inline-block;
+	}
+	.video-thumb img {
+	  display: block;
 	}
 </style>
