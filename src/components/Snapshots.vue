@@ -44,7 +44,9 @@
 	  </div>
 	  <div class="searchcontainer">
 		  <div class="searchtile" v-for="row in searchresults" @click="setHit(row)">
+		      <a :title="row.filename + ' ' + row.desc">
 			  <img class="searchthumb" v-bind:src="row.src + '/' + row.letter + '/' + row.md5 + '.webp'" @click="setHit(row)" />
+		      </a>
 		  </div>
 	  </div>
           <div class="overlay" v-if="hit" @click="clearHit()">&nbsp;</div>
@@ -64,10 +66,10 @@
 				    <tr><th>Folder</th><td>{{hit.dir}}</td></tr>
 				    <tr><td colspan="2">
 			    <a :href="hit.medurl" v-if="hit.medurl" target="_blank">Download Medium</a><br />
-			    <a :href="hit.largeurl" target="_blank">Download Large</a><br />
+			    <a v-if="hit.largeurl" :href="hit.largeurl" target="_blank">Download Large</a><br />
 			    <a v-if="hit.sourceurl" :href="hit.sourceurl" target="_blank">Image Source</a><br />
-			    <a :href="hit.meddirlink" v-if="hit.meddirlink" target="_blank">Browse Folder (Medium Resolution)</a><br />
-			    <a :href="hit.bigdirlink" target="_blank">Browse Folder (High Resolution)</a><br />
+			    <a :href="hit.meddirlink" v-if="hit.meddirlink" target="_blank">Browse Folder <span v-if="hit.bigdirlink">(Medium Resolution)</span></a><br />
+			    <a v-if="hit.bigdirlink" :href="hit.bigdirlink" target="_blank">Browse Folder (High Resolution)</a><br />
 					    </td></tr></table>
 	      </div>
 	  </div>
@@ -208,6 +210,17 @@
         if (sortFromUrl) {
           this.sort = sortFromUrl;
         }
+        axios
+          .get('/videos/snapshots.json')
+          .then(res => {
+            for(let i = 0; i < res.data.length; i++) {
+		    res.data[i].src = "videos";
+		    this.addArtType(res.data[i].arttype);
+	    }
+            this.snapshots = this.snapshots.concat(res.data);
+            this.reSort();
+            document.getElementById('searchinput').focus();
+          })
         axios
           .get('/thumbs/snapshots.json')
           .then(res => {
