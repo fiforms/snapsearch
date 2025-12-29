@@ -72,21 +72,24 @@
 		      <video v-if="isPlaying" v-bind:src="hit.medurl" controls autoplay class="video-player"></video>
 	      </div>
 	      <div class="innerbody">
-			    <table><tbody>
-				    <tr><th>Filename</th><td>{{hit.filename}}</td></tr>
-				    <tr><td colspan="2">{{hit.desc}}</td></tr>
-				    <tr><th>Type</th><td>{{hit.arttype}}</td></tr>
-				    <tr><th>Resolution</th><td>{{hit.width}}x{{hit.height}}</td></tr>
-				    <tr><th>License</th><td>{{hit.license}}</td></tr>
-				    <tr><th>Attribution</th><td>{{hit.attribution}}</td></tr>
-				    <tr><th>Folder</th><td>{{hit.dir}}</td></tr>
-				    <tr><td colspan="2">
-			    <a :href="hit.medurl" v-if="hit.medurl" target="_blank">Download Medium</a><br />
-			    <a v-if="hit.largeurl" :href="hit.largeurl" target="_blank">Download Large</a><br />
-			    <a v-if="hit.sourceurl" :href="hit.sourceurl" target="_blank">Image Source</a><br />
-			    <a :href="hit.meddirlink" v-if="hit.meddirlink" target="_blank">Browse Folder <span v-if="hit.bigdirlink">(Medium Resolution)</span></a><br />
-			    <a v-if="hit.bigdirlink" :href="hit.bigdirlink" target="_blank">Browse Folder (High Resolution)</a><br />
-					    </td></tr></tbody></table>
+			    <table class="mediainfo">
+				<thead><tr><td colspan="2">
+					<a :href="hit.medurl" v-if="hit.medurl" target="_blank"><button>Download Medium</button></a>&nbsp;
+					<a v-if="hit.largeurl" :href="hit.largeurl" target="_blank"><button>Download Large</button></a>&nbsp;
+					<a v-if="hit.sourceurl" :href="hit.sourceurl" target="_blank"><button>Source</button></a>&nbsp;
+					<a :href="hit.meddirlink" v-if="hit.meddirlink" target="_blank"><button>Browse <span v-if="hit.bigdirlink">(Medium)</span></button></a>&nbsp;
+					<a v-if="hit.bigdirlink" :href="hit.bigdirlink" target="_blank"><button>Browse (High Res)</button></a>
+				</td></tr>
+				</thead>
+				<tbody>
+				    <tr><th>Filename</th><td class="data">{{hit.filename}}</td></tr>
+				    <tr><td colspan="2" class="twocolumn">{{hit.desc}}</td></tr>
+				    <tr><th>Type</th><td class="data">{{hit.arttype}}</td></tr>
+				    <tr><th>Resolution</th><td class="data">{{hit.width}}x{{hit.height}}</td></tr>
+				    <tr><th>License</th><td class="data">{{hit.license}}</td></tr>
+				    <tr><th>Attribution</th><td class="data">{{hit.attribution}}</td></tr>
+				    <tr><th>Folder</th><td class="data">{{hit.dir}}</td></tr>
+				    </tbody></table>
 	      </div>
 	  </div>
 		  
@@ -290,14 +293,6 @@
 	        padding: 1em;
 	        padding-right: 5em;
 	}
-	.searchcontainer
-	{
-		background-color: #ddddff;
-		display: flex;
-		flex-wrap: wrap;
-		width: 100%;
-		padding: 2em;
-	}
 	#searchinput {
 	        width: 50vw;
 	}
@@ -308,27 +303,7 @@
 	       right: 2px;
 	       width: 3.5em;
 	}
-	.searchtile
-	{
 
-		width: 276px;
-		height: 276px;
-		margin: 5px; /* Adjust as needed */
-		box-sizing: border-box;
-		cursor: pointer;
-		background-color: #333333;
-	}
-	.searchtile:hover
-	{
-		background-color: #666666;
-	}
-	.searchtile img
-	{
-		position: relative;
-		top: 50%;
-		left: 50%;
-		transform: translate(-50%, -50%);
-	}
 
 	.hitdetails {
 		position: fixed;
@@ -350,13 +325,7 @@
 		font-weight: bold;
 		padding: 0.5em;
 	}
-	.hitdetails .innerbody {
-		max-height: 90vh; /* Set the maximum height as a percentage of the viewport height */
-		overflow-y: auto; /* Enable vertical scrollbar when content exceeds the max height */
-		overflow-x: clip;
-		max-width: 60vh;
 
-	}
 	.hitdetails .innerbody img {
 	        width: 100%;
 		max-width: 100%;
