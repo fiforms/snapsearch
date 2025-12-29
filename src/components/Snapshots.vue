@@ -1,5 +1,5 @@
 <template>
-  <div class="container" tabindex="0" @keydown.esc="clearHit">
+  <div class="container" tabindex="0" @keydown.esc="clearHit" @click="closeSettings">
 	  <div class="parametercontainer">
 	    <div class="homelink">
 
@@ -10,35 +10,46 @@
 	    </div>
 	    <div class="searchbox">
 	    <input v-model="searchterm" id="searchinput" placeholder="Search..." /><br />
-	    
-	    <label>
-	      <input name="sortradio" type="radio" v-model="sort" value="path">
-	      Folder Order
-	    </label>
-
-	    <label>
-	      <input name="sortradio" type="radio" v-model="sort" value="date">
-	      Newest First
-	    </label>
-
-	    <label>
-	      <input name="sortradio" type="radio" v-model="sort" value="random" @click="reSort">
-	      Random
-	    </label>&nbsp;&nbsp;&nbsp;&nbsp;
-	    <label>
-	      <input name="showall" type="checkbox" v-model="showall"> Show All Hits
-	    </label>
-	    <label>
-	      <input name="filterxx" type="checkbox" v-model="filterxx"> Filter Offensive Images
-	    </label>
-	    <label>
-		    &nbsp;&nbsp;&nbsp;
+	    <label class="typefilter">
 		    <select name="typefilter" v-model="typefilter">
 			    <option value="">{Filter by Type}</option>
 			    <option v-for="type in typelist">{{type}}</option>
 		    </select>
-	    </label> &nbsp;
-	    <a href="https://content.vrbm.org/browse/" style="color: #999999;">Browse Thumbnails</a>
+	    </label>
+	    <div class="settingswrap" @click.stop>
+		    <button class="settingsbutton" type="button" @click="toggleSettings" aria-haspopup="true" :aria-expanded="showSettings">
+			    <svg viewBox="0 0 24 24" aria-hidden="true">
+				    <path d="M19.14 12.94a7.97 7.97 0 0 0 .05-.94 7.97 7.97 0 0 0-.05-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.6 7.6 0 0 0-1.63-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.58.23-1.12.53-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.7 8.84a.5.5 0 0 0 .12.64l2.03 1.58a7.97 7.97 0 0 0-.05.94c0 .32.02.63.05.94L2.82 14.52a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96c.51.41 1.05.72 1.63.94l.36 2.54a.5.5 0 0 0 .5.42h3.84a.5.5 0 0 0 .5-.42l.36-2.54c.58-.23 1.12-.53 1.63-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5Z" />
+			    </svg>
+		    </button>
+		    <div class="settingsmenu" v-if="showSettings">
+			    <div class="settingsgroup">
+				    <span class="settingstitle">Sort</span>
+				    <label>
+				      <input name="sortradio" type="radio" v-model="sort" value="path">
+				      Folder Order
+				    </label>
+				    <label>
+				      <input name="sortradio" type="radio" v-model="sort" value="date">
+				      Newest First
+				    </label>
+				    <label>
+				      <input name="sortradio" type="radio" v-model="sort" value="random" @click="reSort">
+				      Random
+				    </label>
+			    </div>
+			    <div class="settingsgroup">
+				    <span class="settingstitle">Filters</span>
+				    <label>
+				      <input name="showall" type="checkbox" v-model="showall"> Show All Hits
+				    </label>
+				    <label>
+				      <input name="filterxx" type="checkbox" v-model="filterxx"> Filter Offensive Images
+				    </label>
+			    </div>
+			    <a class="browse-link" href="https://content.vrbm.org/browse/">Browse Thumbnails</a>
+		    </div>
+	    </div>
 	    </div>
 	    <a href="https://snapshots.vrbm.org/"><img src="/searchicon.png" class="logo" /></a>
 	  </div>
@@ -52,16 +63,15 @@
 	  </div>
           <div class="overlay" v-if="hit" @click="clearHit()">&nbsp;</div>
 	  <div class="hitdetails" v-if="hit">
-	      <div class="heading">Details
-	      <span class="close" @click="clearHit()">X</span>
+	      <button class="close lightbox-close" type="button" @click="clearHit()">X</button>
+	      <div class="lightboxmedia">
+		      <div v-if="!isPlaying" class="video-thumb" @click="playVideo">
+	                  <img v-bind:src="hit.src + '/' + hit.letter + '/' + hit.md5 + '.768.webp'" />
+			  <div v-if="hit.ftype == 'video'" class="play-overlay" @click="playVideo">▶</div>
+		      </div>
+		      <video v-if="isPlaying" v-bind:src="hit.medurl" controls autoplay class="video-player"></video>
 	      </div>
 	      <div class="innerbody">
-		            
-		            <div v-if="!isPlaying" class="video-thumb" @click="playVideo">
-	                        <img v-bind:src="hit.src + '/' + hit.letter + '/' + hit.md5 + '.768.webp'" />
-				<div v-if="hit.ftype == 'video'" class="play-overlay" @click="playVideo">▶</div>
-			    </div><br />
-			    <video v-if="isPlaying" v-bind:src="hit.medurl" controls autoplay class="video-player"></video><br />
 			    <table><tbody>
 				    <tr><th>Filename</th><td>{{hit.filename}}</td></tr>
 				    <tr><td colspan="2">{{hit.desc}}</td></tr>
@@ -101,6 +111,7 @@
 	typefilter: "",
 	typelist: [],
 	isPlaying: false,
+	showSettings: false,
       };
     },
     watch: {
@@ -176,6 +187,14 @@
 	clearHit() {
 	    this.hit = null;
 	    this.isPlaying = false;
+	},
+	toggleSettings() {
+	    this.showSettings = !this.showSettings;
+	},
+	closeSettings() {
+	    if(this.showSettings) {
+		    this.showSettings = false;
+	    }
 	},
 	reSort() {
 	    this.snapshots.sort(this.sortCompare)
