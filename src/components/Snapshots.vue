@@ -116,7 +116,8 @@
 	searchterm: "",
 	searchresults: null,
 	hit: null,
-	sort: "default",
+	sort: "date",
+	autoSort: true,
 	showall: false,
 	filterxx: true,
 	typefilter: "",
@@ -166,9 +167,6 @@
         updateSearch (event) {
 	    var res = new Array();
 	    var count = 0
-	    if(this.searchterm.length >= 3 && this.sort == "default") {
-		    this.sort = "path";
-	    }
 	    if(this.searchterm.length < 3 && this.showall) {
 	        this.showall = false;
 	        this.$forceUpdate();
@@ -188,6 +186,7 @@
 				break;
 			    }
 		    }
+			res.sort(this.sortCompare);
 		    this.searchresults = res;
 	    }
 	},
@@ -263,8 +262,9 @@
 	    }
 	},
 	reSort() {
-	    this.snapshots.sort(this.sortCompare)
-	    this.updateSearch()
+		if(this.searchresults && this.searchresults.length > 0) {
+		    this.searchresults.sort(this.sortCompare)
+		}
 	},
 	sortCompare(a,b) {
 	    if(this.sort == "path") {
@@ -305,6 +305,7 @@
         const sortFromUrl = urlParams.get('sort');
         if (sortFromUrl) {
           this.sort = sortFromUrl;
+	  this.autoSort = false;
         }
         axios
           .get('/videos/snapshots.json')
@@ -314,7 +315,7 @@
 		    this.addArtType(res.data[i].arttype);
 	    }
             this.snapshots = this.snapshots.concat(res.data);
-            this.reSort();
+			this.updateSearch();
             document.getElementById('searchinput').focus();
           })
         axios
@@ -325,7 +326,7 @@
 		    this.addArtType(res.data[i].arttype);
 	    }
             this.snapshots = this.snapshots.concat(res.data);
-            this.reSort();
+			this.updateSearch();
             document.getElementById('searchinput').focus();
           })
         axios
@@ -336,7 +337,7 @@
 		    this.addArtType(res.data[i].arttype);
 	    }
             this.snapshots = this.snapshots.concat(res.data);
-            this.reSort();
+            this.updateSearch();
             document.getElementById('searchinput').focus();
           })
     },
