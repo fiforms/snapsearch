@@ -428,13 +428,48 @@ table.mediainfo button {
   .searchcontainer {
 
     /* Adjust grid to one column, centered images */
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(35vw, 1fr));
     justify-items: center;
   }
 
   .searchtile {
-    width: 160px;
-    height: 160px;
+    width: 40vw;
+    height: 40vw;
+    margin: 5vw;
+  }
+
+  .mediainfo,
+  .mediainfo thead,
+  .mediainfo tbody,
+  .mediainfo tr,
+  .mediainfo th,
+  .mediainfo td {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .mediainfo tr {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 0.2rem 0;
+  }
+
+  .mediainfo th,
+  .mediainfo td {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .mediainfo th {
+    padding-bottom: 0.2rem;
+  }
+
+  .mediainfo td.data {
+    padding-top: 0.1rem;
+  }
+
+  .mediainfo td.twocolumn {
+    padding-top: 0.4rem;
   }
 
 }
