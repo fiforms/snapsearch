@@ -64,6 +64,14 @@
           <div class="overlay" v-if="hit" @click="clearHit()">&nbsp;</div>
 	  <div class="hitdetails" v-if="hit">
 	      <button class="close lightbox-close" type="button" @click="clearHit()">X</button>
+	      <div class="lightbox-nav">
+		      <button class="nav-button" type="button" @click.stop="showPrevHit" aria-label="Previous result">
+			      <span aria-hidden="true">&lt;</span>
+		      </button>
+		      <button class="nav-button" type="button" @click.stop="showNextHit" aria-label="Next result">
+			      <span aria-hidden="true">&gt;</span>
+		      </button>
+	      </div>
 	      <div class="lightboxmedia">
 		      <div v-show="!isVideoReady" class="video-thumb" @click="maybePlayVideo">
 	                  <img v-bind:src="hit.src + '/' + hit.letter + '/' + hit.md5 + '.768.webp'" />
@@ -116,6 +124,7 @@
 	isPlaying: false,
 	isVideoReady: false,
 	showSettings: false,
+	handleKeydown: null,
       };
     },
     watch: {
@@ -186,6 +195,44 @@
 	    this.hit = row;
 	    this.isPlaying = false;
 	    this.isVideoReady = false;
+	},
+	getHitIndex() {
+	    if(!this.hit || !this.searchresults || this.searchresults.length === 0) {
+		    return -1;
+	    }
+	    let directIndex = this.searchresults.indexOf(this.hit);
+	    if(directIndex >= 0) {
+		    return directIndex;
+	    }
+	    return this.searchresults.findIndex(row => row.md5 === this.hit.md5 && row.src === this.hit.src);
+	},
+	showPrevHit() {
+	    if(!this.hit || !this.searchresults || this.searchresults.length === 0) {
+		    return;
+	    }
+	    let index = this.getHitIndex();
+	    if(index === -1) {
+		    return;
+	    }
+	    let prevIndex = index - 1;
+	    if(prevIndex < 0) {
+		    prevIndex = this.searchresults.length - 1;
+	    }
+	    this.setHit(this.searchresults[prevIndex]);
+	},
+	showNextHit() {
+	    if(!this.hit || !this.searchresults || this.searchresults.length === 0) {
+		    return;
+	    }
+	    let index = this.getHitIndex();
+	    if(index === -1) {
+		    return;
+	    }
+	    let nextIndex = index + 1;
+	    if(nextIndex >= this.searchresults.length) {
+		    nextIndex = 0;
+	    }
+	    this.setHit(this.searchresults[nextIndex]);
 	},
 	maybePlayVideo() {
 	    if(this.hit && this.hit.ftype == "video") {
@@ -293,6 +340,29 @@
             document.getElementById('searchinput').focus();
           })
     },
+    mounted: function() {
+	    this.handleKeydown = (event) => {
+		    if(!this.hit) {
+			    return;
+		    }
+		    if(event.key === "ArrowLeft") {
+			    event.preventDefault();
+			    this.showPrevHit();
+		    } else if(event.key === "ArrowRight") {
+			    event.preventDefault();
+			    this.showNextHit();
+		    } else if(event.key === "Escape") {
+			    event.preventDefault();
+			    this.clearHit();
+		    }
+	    };
+	    window.addEventListener("keydown", this.handleKeydown);
+    },
+    beforeUnmount: function() {
+	    if(this.handleKeydown) {
+		    window.removeEventListener("keydown", this.handleKeydown);
+	    }
+    },
   }
 </script>
 
@@ -332,6 +402,7 @@
 		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 		z-index: 1000;
 		max-width: 90vw;
+		overflow: visible;
 	}
 	.hitdetails .heading {
 		width: 100%;
@@ -355,6 +426,34 @@
 		cursor: pointer;
 		font-weight: bold;
 		color: #999999;
+	}
+	.lightbox-nav {
+		position: absolute;
+		top: 50%;
+		left: 0;
+		right: 0;
+		display: flex;
+		justify-content: space-between;
+		pointer-events: none;
+		transform: translateY(-50%);
+		padding: 0 0.5em;
+		z-index: 2;
+	}
+	.nav-button {
+		pointer-events: auto;
+		border: 1px solid rgba(0, 0, 0, 0.2);
+		background: rgba(255, 255, 255, 0.95);
+		color: #111111;
+		font-size: 2rem;
+		line-height: 1;
+		width: 2.2rem;
+		height: 2.2rem;
+		border-radius: 50%;
+		cursor: pointer;
+		box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+	}
+	.nav-button:hover {
+		background: rgba(255, 255, 255, 1);
 	}
 	
 	.overlay {
