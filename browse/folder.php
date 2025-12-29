@@ -20,7 +20,7 @@
 
 <a href="/browse/">Return to All Folder Listing</a><br />
 <br />
-<table class="folderlisting">
+<table class="folderlisting"><tbody>
 <?php
 
 	// Prepare the SQL statement
@@ -51,4 +51,4 @@ $stmt->close();
 
 	$conn->close();
 
-?></table></body></html>
+?></tbody></table></body></html>

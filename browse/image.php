@@ -44,7 +44,7 @@ $stmt->fetch();
     $interactive = "/#q=".urlencode($filename);
     echo "<a href=\"/browse/folder/$collection/$dirurl\">Return to folder listing for $dir</a><br /><a href=\"/browse/\">Return to All Folder Listing</a><br />";
     echo "<a href=\"$interactive\"><img src=\"/$collection/$letter/$md5.768.webp\" /></a>";
-    echo "<table class=\"imageinfo\">";
+    echo "<table class=\"imageinfo\"><tbody>";
     echo "<tr><th>Filename</th><td>$filename</td></tr>";
     echo "<tr><th>Desc</th><td>$desc</td></tr>";
     echo "<tr><th>Type </th><td>$arttype </td></tr>";
@@ -71,5 +71,5 @@ $stmt->close();
 <tr><td class="siteinfo" colspan="2">
 The Virtual Bible Snapshot Project provides free artwork to illustrate the Bible and Bible topics, including video, photographs, illustrations, and AI Generated artwork. Creative-Commons licensed and public domain sermon graphics for pastors, teachers and more! Learn more at <a href="https://snapshots.vrbm.org/">snapshots.vrbm.org</a>.
 </td></tr>
-</table>
+</tbody></table>
 </div></body></html>

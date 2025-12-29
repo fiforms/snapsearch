@@ -16,7 +16,7 @@
 </head><body>
 <h1><a href="https://snapshots.vrbm.org">Virtual Bible Snapshot Project</a></h1>
 <h2>Static Folder Listing</h2>
-<table class="folders">
+<table class="folders"><tbody>
 <?php
 	$last = "";
 
@@ -32,4 +32,4 @@
 
 	$conn->close();
 
-?></table></body></html>
+?></tbody></table></body></html>

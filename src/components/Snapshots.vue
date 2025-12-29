@@ -62,7 +62,7 @@
 				<div v-if="hit.ftype == 'video'" class="play-overlay" @click="playVideo">▶</div>
 			    </div><br />
 			    <video v-if="isPlaying" v-bind:src="hit.medurl" controls autoplay class="video-player"></video><br />
-			    <table>
+			    <table><tbody>
 				    <tr><th>Filename</th><td>{{hit.filename}}</td></tr>
 				    <tr><td colspan="2">{{hit.desc}}</td></tr>
 				    <tr><th>Type</th><td>{{hit.arttype}}</td></tr>
@@ -76,7 +76,7 @@
 			    <a v-if="hit.sourceurl" :href="hit.sourceurl" target="_blank">Image Source</a><br />
 			    <a :href="hit.meddirlink" v-if="hit.meddirlink" target="_blank">Browse Folder <span v-if="hit.bigdirlink">(Medium Resolution)</span></a><br />
 			    <a v-if="hit.bigdirlink" :href="hit.bigdirlink" target="_blank">Browse Folder (High Resolution)</a><br />
-					    </td></tr></table>
+					    </td></tr></tbody></table>
 	      </div>
 	  </div>
 		  
