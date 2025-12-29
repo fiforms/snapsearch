@@ -65,11 +65,11 @@
 	  <div class="hitdetails" v-if="hit">
 	      <button class="close lightbox-close" type="button" @click="clearHit()">X</button>
 	      <div class="lightboxmedia">
-		      <div v-if="!isPlaying" class="video-thumb" @click="playVideo">
+		      <div v-show="!isVideoReady" class="video-thumb" @click="maybePlayVideo">
 	                  <img v-bind:src="hit.src + '/' + hit.letter + '/' + hit.md5 + '.768.webp'" />
-			  <div v-if="hit.ftype == 'video'" class="play-overlay" @click="playVideo">▶</div>
+			  <div v-if="hit.ftype == 'video'" class="play-overlay" @click.stop="playVideo">▶</div>
 		      </div>
-		      <video v-if="isPlaying" v-bind:src="hit.medurl" controls autoplay class="video-player"></video>
+		      <video v-if="hit.ftype == 'video' && isPlaying" v-show="isVideoReady" v-bind:src="hit.medurl" controls autoplay class="video-player" @loadeddata="onVideoLoaded"></video>
 	      </div>
 	      <div class="innerbody">
 			    <table class="mediainfo">
@@ -114,6 +114,7 @@
 	typefilter: "",
 	typelist: [],
 	isPlaying: false,
+	isVideoReady: false,
 	showSettings: false,
       };
     },
@@ -183,13 +184,28 @@
 	},
 	setHit(row) {
 	    this.hit = row;
+	    this.isPlaying = false;
+	    this.isVideoReady = false;
+	},
+	maybePlayVideo() {
+	    if(this.hit && this.hit.ftype == "video") {
+		    this.playVideo();
+	    }
 	},
 	playVideo() {
+	    if(!this.hit || this.hit.ftype != "video") {
+		    return;
+	    }
+	    this.isVideoReady = false;
 	    this.isPlaying = true;
+	},
+	onVideoLoaded() {
+	    this.isVideoReady = true;
 	},
 	clearHit() {
 	    this.hit = null;
 	    this.isPlaying = false;
+	    this.isVideoReady = false;
 	},
 	toggleSettings() {
 	    this.showSettings = !this.showSettings;
