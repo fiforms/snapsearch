@@ -408,9 +408,9 @@ table.mediainfo button {
 .searchtile img
 {
   position: relative;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  top: 138px;
+  left: 138px;
+  transform: translate(-138px, -138px);
 }
 
 
@@ -436,6 +436,14 @@ table.mediainfo button {
     width: 40vw;
     height: 40vw;
     margin: 5vw;
+  }
+
+  .searchtile img
+  {
+    position: relative;
+    top: 20vw;
+    left: 20vw;
+    transform: translate(-20vw, -20vw);
   }
 
   .mediainfo,
