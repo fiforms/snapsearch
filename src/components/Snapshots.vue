@@ -9,45 +9,65 @@
 	      </a>
 	    </div>
 	    <div class="searchbox">
-	    <input v-model="searchterm" id="searchinput" placeholder="Search..." /><br />
-	    <label class="typefilter">
-		    <select name="typefilter" v-model="typefilter">
-			    <option value="">{Filter by Type}</option>
-			    <option v-for="type in typelist">{{type}}</option>
-		    </select>
-	    </label>
-	    <div class="settingswrap" @click.stop>
-		    <button class="settingsbutton" type="button" @click="toggleSettings" aria-haspopup="true" :aria-expanded="showSettings">
-			    <svg viewBox="0 0 24 24" aria-hidden="true">
-				    <path d="M19.14 12.94a7.97 7.97 0 0 0 .05-.94 7.97 7.97 0 0 0-.05-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.6 7.6 0 0 0-1.63-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.58.23-1.12.53-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.7 8.84a.5.5 0 0 0 .12.64l2.03 1.58a7.97 7.97 0 0 0-.05.94c0 .32.02.63.05.94L2.82 14.52a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96c.51.41 1.05.72 1.63.94l.36 2.54a.5.5 0 0 0 .5.42h3.84a.5.5 0 0 0 .5-.42l.36-2.54c.58-.23 1.12-.53 1.63-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5Z" />
-			    </svg>
-		    </button>
-		    <div class="settingsmenu" v-if="showSettings">
-			    <div class="settingsgroup">
-				    <span class="settingstitle">Sort</span>
-				    <label>
-				      <input name="sortradio" type="radio" v-model="sort" value="path">
-				      Folder Order
-				    </label>
-				    <label>
-				      <input name="sortradio" type="radio" v-model="sort" value="date">
-				      Newest First
-				    </label>
-				    <label>
-				      <input name="sortradio" type="radio" v-model="sort" value="random" @click="reSort">
-				      Random
-				    </label>
+	    <div class="top-toolbar">
+		    <input v-model="searchterm" id="searchinput" placeholder="Search..." />
+		    <div class="filter-row">
+			    <label class="typefilter">
+				    <select name="typefilter" v-model="typefilter">
+					    <option value="">{Filter by Type}</option>
+					    <option v-for="type in typelist">{{type}}</option>
+				    </select>
+			    </label>
+			    <label class="collectionfilter">
+				    <select name="collectionfilter" v-model="collectionfilter">
+					    <option value="">{Collection}</option>
+					    <option v-for="collection in collections" :value="collection.id">{{collection.label}}</option>
+				    </select>
+			    </label>
+		    </div>
+		    <div class="settingswrap" @click.stop>
+			    <button class="settingsbutton" type="button" @click="toggleSettings" aria-haspopup="true" :aria-expanded="showSettings">
+				    <svg viewBox="0 0 24 24" aria-hidden="true">
+					    <path d="M19.14 12.94a7.97 7.97 0 0 0 .05-.94 7.97 7.97 0 0 0-.05-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.6 7.6 0 0 0-1.63-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.58.23-1.12.53-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.7 8.84a.5.5 0 0 0 .12.64l2.03 1.58a7.97 7.97 0 0 0-.05.94c0 .32.02.63.05.94L2.82 14.52a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96c.51.41 1.05.72 1.63.94l.36 2.54a.5.5 0 0 0 .5.42h3.84a.5.5 0 0 0 .5-.42l.36-2.54c.58-.23 1.12-.53 1.63-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5Z" />
+				    </svg>
+			    </button>
+			    <div class="settingsmenu" v-if="showSettings">
+				    <div class="settingsgroup">
+					    <span class="settingstitle">Sort</span>
+					    <label>
+					      <input name="sortradio" type="radio" v-model="sort" value="path">
+					      Folder Order
+					    </label>
+					    <label>
+					      <input name="sortradio" type="radio" v-model="sort" value="date">
+					      Newest First
+					    </label>
+					    <label>
+					      <input name="sortradio" type="radio" v-model="sort" value="random" @click="reSort">
+					      Random
+					    </label>
+				    </div>
+				    <div class="settingsgroup">
+					    <span class="settingstitle">Filters</span>
+					    <label>
+					      <input name="showall" type="checkbox" v-model="showall"> Show All Hits
+					    </label>
+					    <label>
+					      <input name="filterxx" type="checkbox" v-model="filterxx"> Filter Offensive Images
+					    </label>
+				    </div>
+				    <a class="browse-link" href="https://content.vrbm.org/browse/">Browse Thumbnails</a>
 			    </div>
-			    <div class="settingsgroup">
-				    <span class="settingstitle">Filters</span>
-				    <label>
-				      <input name="showall" type="checkbox" v-model="showall"> Show All Hits
-				    </label>
-				    <label>
-				      <input name="filterxx" type="checkbox" v-model="filterxx"> Filter Offensive Images
-				    </label>
-			    </div>
-			    <a class="browse-link" href="https://content.vrbm.org/browse/">Browse Thumbnails</a>
+		    </div>
+	    </div>
+	    <div class="folder-toolbar" v-if="collectionfilter" @click.stop>
+		    <div class="folder-path">
+			    <button class="folder-button" type="button" v-if="collectionPath.length" @click="goToParentFolder">Up</button>
+			    <span class="folder-current" v-if="collectionPath.length">{{collectionPath.join(' / ')}}</span>
+			    <span class="folder-current" v-else>All Folders</span>
+		    </div>
+		    <div class="folder-list">
+			    <button class="folder-button" type="button" v-for="folder in currentFolderOptions" :key="folder" @click="enterFolder(folder)">{{folder}}</button>
 		    </div>
 	    </div>
 	    </div>
@@ -121,6 +141,14 @@
 	showall: false,
 	filterxx: true,
 	typefilter: "",
+	collectionfilter: "",
+	collectionPath: [],
+	collections: [
+		{ id: "videos", label: "Video Collection" },
+		{ id: "thumbs", label: "Main Collection" },
+		{ id: "illustrations", label: "Illustration Collection" },
+	],
+	collectionTree: {},
 	typelist: [],
 	isPlaying: false,
 	isVideoReady: false,
@@ -147,8 +175,90 @@
 		    this.updateSearch();
 	            this.updateUrl();
 	    },
+	    collectionfilter(newCollection) {
+		    this.collectionPath = [];
+		    this.updateSearch();
+		    this.updateUrl();
+	    },
     },
     methods: {
+	getRowPath(row) {
+		return row.path || row.dir || "";
+	},
+	getPathSegments(path) {
+		if(!path) {
+			return [];
+		}
+		return path.split("/").filter(segment => segment.length > 0);
+	},
+	addToCollectionTree(collectionId, path) {
+		if(!collectionId) {
+			return;
+		}
+		if(!this.collectionTree[collectionId]) {
+			this.collectionTree[collectionId] = { children: {} };
+		}
+		const segments = this.getPathSegments(path);
+		if(segments.length === 0) {
+			return;
+		}
+		let node = this.collectionTree[collectionId];
+		for(let i = 0; i < segments.length; i++) {
+			const segment = segments[i];
+			if(!node.children[segment]) {
+				node.children[segment] = { children: {} };
+			}
+			node = node.children[segment];
+		}
+	},
+	getCurrentFolderNode() {
+		if(!this.collectionfilter || !this.collectionTree[this.collectionfilter]) {
+			return null;
+		}
+		let node = this.collectionTree[this.collectionfilter];
+		for(let i = 0; i < this.collectionPath.length; i++) {
+			const segment = this.collectionPath[i];
+			if(!node.children || !node.children[segment]) {
+				return null;
+			}
+			node = node.children[segment];
+		}
+		return node;
+	},
+	matchesCollectionFilter(row) {
+		if(!this.collectionfilter) {
+			return true;
+		}
+		if(row.src !== this.collectionfilter) {
+			return false;
+		}
+		if(this.collectionPath.length === 0) {
+			return true;
+		}
+		const segments = this.getPathSegments(this.getRowPath(row));
+		if(segments.length < this.collectionPath.length) {
+			return false;
+		}
+		for(let i = 0; i < this.collectionPath.length; i++) {
+			if(segments[i] !== this.collectionPath[i]) {
+				return false;
+			}
+		}
+		return true;
+	},
+	enterFolder(folder) {
+		this.collectionPath.push(folder);
+		this.updateSearch();
+		this.updateUrl();
+	},
+	goToParentFolder() {
+		if(this.collectionPath.length === 0) {
+			return;
+		}
+		this.collectionPath.pop();
+		this.updateSearch();
+		this.updateUrl();
+	},
         match (terms,i) {
             let found = 0
 	    if(this.snapshots[i].xx == "XX" && this.filterxx) {
@@ -176,7 +286,7 @@
 			    let terms = this.searchterm.toLowerCase().split(" ")
 			    if(this.match(terms,i)) {
 				    let row=this.snapshots[i];
-				    if(this.typefilter == "" || row.arttype == this.typefilter) {
+				    if((this.typefilter == "" || row.arttype == this.typefilter) && this.matchesCollectionFilter(row)) {
 				        row.letter = row.md5.substring(0,1);
 				        res.push(row);
 				        count++
@@ -286,7 +396,21 @@
         updateUrl() {
           // Update the URL with the current search parameter
           const baseUrl = window.location.href.split('#')[0];
-          window.location.href = `${baseUrl}#q=${this.searchterm}&sort=${this.sort}`;
+          const params = new URLSearchParams();
+          if(this.searchterm) {
+            params.set("q", this.searchterm);
+          }
+          params.set("sort", this.sort);
+          if(this.typefilter) {
+            params.set("type", this.typefilter);
+          }
+          if(this.collectionfilter) {
+            params.set("collection", this.collectionfilter);
+          }
+          if(this.collectionPath.length > 0) {
+            params.set("folder", this.collectionPath.join("/"));
+          }
+          window.location.href = `${baseUrl}#${params.toString()}`;
         },
         addArtType: function(newType) {
 	    if(!this.typelist.includes(newType)) {
@@ -294,6 +418,15 @@
 		    this.typelist.sort();
 	    }
         },
+    },
+    computed: {
+	    currentFolderOptions() {
+		    const node = this.getCurrentFolderNode();
+		    if(!node || !node.children) {
+			    return [];
+		    }
+		    return Object.keys(node.children).sort((a,b) => a.localeCompare(b));
+	    },
     },
     created: function() {
         // Initialize search based on URL parameter
@@ -307,12 +440,25 @@
           this.sort = sortFromUrl;
 	  this.autoSort = false;
         }
+	const typeFromUrl = urlParams.get('type');
+	if(typeFromUrl) {
+	  this.typefilter = typeFromUrl;
+	}
+	const collectionFromUrl = urlParams.get('collection');
+	if(collectionFromUrl) {
+	  this.collectionfilter = collectionFromUrl;
+	}
+	const folderFromUrl = urlParams.get('folder');
+	if(folderFromUrl) {
+	  this.collectionPath = this.getPathSegments(folderFromUrl);
+	}
         axios
           .get('/videos/snapshots.json')
           .then(res => {
             for(let i = 0; i < res.data.length; i++) {
 		    res.data[i].src = "videos";
 		    this.addArtType(res.data[i].arttype);
+		    this.addToCollectionTree(res.data[i].src, this.getRowPath(res.data[i]));
 	    }
             this.snapshots = this.snapshots.concat(res.data);
 			this.updateSearch();
@@ -324,6 +470,7 @@
             for(let i = 0; i < res.data.length; i++) {
 		    res.data[i].src = "thumbs";
 		    this.addArtType(res.data[i].arttype);
+		    this.addToCollectionTree(res.data[i].src, this.getRowPath(res.data[i]));
 	    }
             this.snapshots = this.snapshots.concat(res.data);
 			this.updateSearch();
@@ -335,6 +482,7 @@
             for(let i = 0; i < res.data.length; i++) {
 		    res.data[i].src = "illustrations";
 		    this.addArtType(res.data[i].arttype);
+		    this.addToCollectionTree(res.data[i].src, this.getRowPath(res.data[i]));
 	    }
             this.snapshots = this.snapshots.concat(res.data);
             this.updateSearch();
@@ -381,7 +529,8 @@
 	        padding-right: 5em;
 	}
 	#searchinput {
-	        width: 50vw;
+	        flex: 1 1 22rem;
+	        min-width: 14rem;
 	}
 	.logo
 	{
@@ -482,6 +631,57 @@
 	    width: 2em;
 	    float: left;
 	    margin-right: 1em;
+	}
+	.filter-row {
+	    display: flex;
+	    align-items: center;
+	    gap: 0.75em;
+	    flex-wrap: nowrap;
+	}
+	.top-toolbar {
+	    display: flex;
+	    align-items: center;
+	    gap: 0.75em;
+	    width: 100%;
+	    flex-wrap: nowrap;
+	}
+	.settingswrap {
+	    margin-left: auto;
+	}
+	.folder-toolbar {
+	    margin-top: 0.5em;
+	    display: flex;
+	    flex-direction: column;
+	    gap: 0.4em;
+	    width: 100%;
+	    clear: both;
+	}
+	.folder-path {
+	    display: flex;
+	    align-items: center;
+	    gap: 0.5em;
+	    flex-wrap: wrap;
+	}
+	.folder-list {
+	    display: flex;
+	    flex-wrap: wrap;
+	    gap: 0.4em;
+	}
+	.folder-button {
+	    background-color: #2d2d66;
+	    color: #eeeeee;
+	    border: 1px solid #444455;
+	    border-radius: 0.4em;
+	    padding: 0.3em 0.6em;
+	    cursor: pointer;
+	    font-size: 0.9em;
+	}
+	.folder-button:hover {
+	    background-color: #3a3a77;
+	}
+	.folder-current {
+	    font-size: 0.9em;
+	    color: #dddddd;
 	}
 	.videoicon-overlay {
 	  position: absolute;
