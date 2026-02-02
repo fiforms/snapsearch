@@ -181,9 +181,9 @@
 		    this.updateUrl();
 	    },
     },
-    methods: {
+	methods: {
 	getRowPath(row) {
-		return row.path || row.dir || "";
+		return row.dir || "";
 	},
 	getPathSegments(path) {
 		if(!path) {
@@ -292,12 +292,17 @@
 				        count++
 				    }
 			    }
-			    if(count >= 100 && !this.showall) {
-				break;
-			    }
 		    }
 			res.sort(this.sortCompare);
-		    this.searchresults = res;
+			if(res.length <= 100 || this.showall) {
+				this.searchresults = res;
+				return 0;
+			}
+			let trimmed = new Array();
+			for(let i = 0; i < 100; i++) {
+				trimmed.push(res[i]);
+			}
+		    this.searchresults = trimmed;
 	    }
 	},
 	setHit(row) {
@@ -378,15 +383,31 @@
 	},
 	sortCompare(a,b) {
 	    if(this.sort == "path") {
-	        if(a.dir == b.dir) {
-	            return a.filename < b.filename ? -1 : 1
+	        const dirA = (a.dir || "");
+	        const dirB = (b.dir || "");
+	        if(dirA !== dirB) {
+	            return dirA < dirB ? -1 : 1;
 	        }
-	        else {
-	            return a.dir < b.dir ? -1 : 1
+	        const fileA = (a.filename || "");
+	        const fileB = (b.filename || "");
+	        if(fileA === fileB) {
+	            return 0;
 	        }
+	        return fileA < fileB ? -1 : 1;
 	    }
 	    else if(this.sort == "date") {
-	        return a.date > b.date ? -1 : 1
+	        const dateA = (a.date || "");
+	        const dateB = (b.date || "");
+	        if(dateA === dateB) {
+	            return 0;
+	        }
+	        if(!dateA) {
+	            return 1;
+	        }
+	        if(!dateB) {
+	            return -1;
+	        }
+	        return dateA > dateB ? -1 : 1;
 	    }
 	    else {
 	        let num = Math.random() - 0.5
@@ -455,6 +476,9 @@
         axios
           .get('/videos/snapshots.json')
           .then(res => {
+			if(!res || !res.data || !Array.isArray(res.data) || res.data.length < 1) {
+				return 1;
+			}
             for(let i = 0; i < res.data.length; i++) {
 		    res.data[i].src = "videos";
 		    this.addArtType(res.data[i].arttype);
