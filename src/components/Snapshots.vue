@@ -107,11 +107,24 @@
 	      <div class="innerbody">
 			    <table class="mediainfo">
 				<thead><tr><td colspan="2">
-					<a :href="hit.medurl" v-if="hit.medurl" target="_blank"><button>Download Medium</button></a>&nbsp;
-					<a v-if="hit.largeurl" :href="hit.largeurl" target="_blank"><button>Download Large</button></a>&nbsp;
-					<a v-if="hit.sourceurl" :href="hit.sourceurl" target="_blank"><button>Source</button></a>&nbsp;
-					<a :href="hit.meddirlink" v-if="hit.meddirlink" target="_blank"><button>Browse <span v-if="hit.bigdirlink">(Medium)</span></button></a>&nbsp;
-					<a v-if="hit.bigdirlink" :href="hit.bigdirlink" target="_blank"><button>Browse (High Res)</button></a>
+					<div class="media-actions">
+						<div class="media-actions-left">
+							<a :href="hit.medurl" v-if="hit.medurl" target="_blank"><button>Download Medium</button></a>
+							<a v-if="hit.largeurl" :href="hit.largeurl" target="_blank"><button>Download Large</button></a>
+							<a v-if="hit.sourceurl" :href="hit.sourceurl" target="_blank"><button>Source</button></a>
+							<a :href="hit.meddirlink" v-if="hit.meddirlink" target="_blank"><button>Browse <span v-if="hit.bigdirlink">(Medium)</span></button></a>
+							<a v-if="hit.bigdirlink" :href="hit.bigdirlink" target="_blank"><button>Browse (High Res)</button></a>
+						</div>
+						<button class="share-button" :class="{ 'is-copied': shareCopied }" type="button" @click="copyShareLink" :title="shareCopied ? 'Link copied' : 'Copy share link'" aria-label="Copy share link">
+							<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+								<circle cx="18" cy="5" r="3" />
+								<circle cx="6" cy="12" r="3" />
+								<circle cx="18" cy="19" r="3" />
+								<path d="M8.7 10.7L15.3 6.3" />
+								<path d="M8.7 13.3L15.3 17.7" />
+							</svg>
+						</button>
+					</div>
 				</td></tr>
 				</thead>
 				<tbody>
@@ -125,6 +138,7 @@
 				    </tbody></table>
 	      </div>
 	  </div>
+	  <div class="copy-toast" v-if="shareCopied">Share link copied to clipboard</div>
 		  
 
   </div>
@@ -160,6 +174,9 @@
 	showSettings: false,
 	showMobileFilters: false,
 	handleKeydown: null,
+	pendingFileHash: "",
+	shareCopied: false,
+	shareCopiedTimer: null,
       };
     },
     watch: {
@@ -315,6 +332,7 @@
 	    this.hit = row;
 	    this.isPlaying = false;
 	    this.isVideoReady = false;
+	    this.shareCopied = false;
 	},
 	getHitIndex() {
 	    if(!this.hit || !this.searchresults || this.searchresults.length === 0) {
@@ -373,6 +391,7 @@
 	    this.hit = null;
 	    this.isPlaying = false;
 	    this.isVideoReady = false;
+	    this.shareCopied = false;
 	},
 	toggleSettings() {
 	    if(!this.showSettings) {
@@ -432,7 +451,7 @@
 	        return num
 	    }
 	},
-        updateUrl() {
+	updateUrl() {
           // Update the URL with the current search parameter
           const baseUrl = window.location.href.split('#')[0];
           const params = new URLSearchParams();
@@ -451,6 +470,53 @@
           }
           window.location.href = `${baseUrl}#${params.toString()}`;
         },
+	buildShareUrl(row) {
+	  const target = row || this.hit;
+	  if(!target || !target.md5) {
+	    return "";
+	  }
+	  return `${window.location.origin}${window.location.pathname}#file=${target.md5}`;
+	},
+	async copyShareLink() {
+	  const shareUrl = this.buildShareUrl(this.hit);
+	  if(!shareUrl) {
+	    return;
+	  }
+	  try {
+	    if(navigator.clipboard && navigator.clipboard.writeText) {
+	      await navigator.clipboard.writeText(shareUrl);
+	    } else {
+	      const fallbackInput = document.createElement("input");
+	      fallbackInput.value = shareUrl;
+	      document.body.appendChild(fallbackInput);
+	      fallbackInput.select();
+	      document.execCommand("copy");
+	      document.body.removeChild(fallbackInput);
+	    }
+	    this.shareCopied = true;
+	    if(this.shareCopiedTimer) {
+	      window.clearTimeout(this.shareCopiedTimer);
+	    }
+	    this.shareCopiedTimer = window.setTimeout(() => {
+	      this.shareCopied = false;
+	      this.shareCopiedTimer = null;
+	    }, 1600);
+	  } catch(error) {
+	    console.error("Failed to copy share URL:", error);
+	  }
+	},
+	tryOpenPendingFile() {
+	  if(!this.pendingFileHash || !this.snapshots.length || this.hit) {
+	    return;
+	  }
+	  const target = this.snapshots.find(row => row.md5 === this.pendingFileHash);
+	  if(!target) {
+	    return;
+	  }
+	  target.letter = target.md5.substring(0,1);
+	  this.setHit(target);
+	  this.pendingFileHash = "";
+	},
         addArtType: function(newType) {
 	    if(!this.typelist.includes(newType)) {
 		    this.typelist.push(newType);
@@ -491,6 +557,10 @@
 	if(folderFromUrl) {
 	  this.collectionPath = this.getPathSegments(folderFromUrl);
 	}
+	const fileFromUrl = urlParams.get('file');
+	if(fileFromUrl) {
+	  this.pendingFileHash = fileFromUrl;
+	}
         axios
           .get('/videos/snapshots.json')
           .then(res => {
@@ -504,6 +574,7 @@
 	    }
             this.snapshots = this.snapshots.concat(res.data);
 			this.updateSearch();
+			this.tryOpenPendingFile();
             document.getElementById('searchinput').focus();
           })
         axios
@@ -516,6 +587,7 @@
 	    }
             this.snapshots = this.snapshots.concat(res.data);
 			this.updateSearch();
+			this.tryOpenPendingFile();
             document.getElementById('searchinput').focus();
           })
         axios
@@ -528,6 +600,7 @@
 	    }
             this.snapshots = this.snapshots.concat(res.data);
             this.updateSearch();
+            this.tryOpenPendingFile();
             document.getElementById('searchinput').focus();
           })
     },
@@ -552,6 +625,9 @@
     beforeUnmount: function() {
 	    if(this.handleKeydown) {
 		    window.removeEventListener("keydown", this.handleKeydown);
+	    }
+	    if(this.shareCopiedTimer) {
+		    window.clearTimeout(this.shareCopiedTimer);
 	    }
     },
   }
@@ -786,6 +862,57 @@
 	.video-thumb img {
 	  display: block;
 	}
+	.media-actions {
+	  display: flex;
+	  align-items: center;
+	  justify-content: space-between;
+	  gap: 0.75em;
+	}
+	.media-actions-left {
+	  display: flex;
+	  flex-wrap: wrap;
+	  gap: 0.5em;
+	  align-items: center;
+	}
+	.share-button {
+	  flex: 0 0 auto;
+	  border: 1px solid #9aa8c2;
+	  background: #ffffff;
+	  color: #2a3a57;
+	  border-radius: 999px;
+	  width: 2.9em;
+	  height: 2.9em;
+	  display: inline-flex;
+	  align-items: center;
+	  justify-content: center;
+	  cursor: pointer;
+	}
+	.share-button svg {
+	  width: 1.5em;
+	  height: 1.5em;
+	}
+	.share-button:hover {
+	  background: #eef3fb;
+	}
+	.share-button.is-copied {
+	  background: #dff3e8;
+	  border-color: #78b38f;
+	  color: #256846;
+	}
+	.copy-toast {
+	  position: fixed;
+	  left: 50%;
+	  bottom: 1.5rem;
+	  transform: translateX(-50%);
+	  z-index: 1100;
+	  background: rgba(24, 36, 56, 0.96);
+	  color: #ffffff;
+	  border: 1px solid rgba(255, 255, 255, 0.2);
+	  border-radius: 999px;
+	  padding: 0.55rem 0.95rem;
+	  font-size: 0.9rem;
+	  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+	}
 
 	@media (max-width: 760px) {
 	  html,
@@ -868,6 +995,9 @@
 	    width: 100%;
 	    height: 100%;
 	    object-fit: cover;
+	  }
+	  .media-actions {
+	    align-items: flex-start;
 	  }
 	}
 </style>
