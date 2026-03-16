@@ -24,7 +24,7 @@
 <?php
 
 	// Prepare the SQL statement
-	$stmt = $conn->prepare("SELECT collection, filename, md5, arttype, ftype FROM snapshots WHERE dir = ? AND collection = ? ORDER BY filename");
+	$stmt = $conn->prepare("SELECT collection, filename, md5, `desc`, arttype, ftype FROM snapshots WHERE dir = ? AND collection = ? ORDER BY filename");
 	$stmt->bind_param('ss',$dir,$col);
 
 
@@ -36,14 +36,29 @@ $col = $_GET['col'];
 $stmt->execute();
 
 // Bind the result variables
-$stmt->bind_result($collection, $filename, $md5, $arttype, $ftype); // Add all columns you need to fetch
+$stmt->bind_result($collection, $filename, $md5, $desc, $arttype, $ftype); // Add all columns you need to fetch
 
 // Fetch the results
 while ($stmt->fetch()) {
     // Print the results
     $letter = substr($md5,0,1);
     $link = "/browse/image/$md5/".htmlspecialchars(urlencode($filename));
-    echo "<tr><td><a href=\"$link\"><img src=\"/$collection/$letter/$md5.webp\" /></a></td><td><a href=\"$link\">$filename</a></td></tr>\r\n";
+    $type_label = "";
+    if($ftype === "audio") {
+        $type_label = " <span class=\"typetag\">Audio</span>";
+        $thumb = "<a href=\"$link\" class=\"audiocover\"><span class=\"audiocopy\">Audio</span><span class=\"audionote\">♪</span>";
+    } elseif($ftype === "video") {
+        $type_label = " <span class=\"typetag\">Video</span>";
+        $thumb = "<a href=\"$link\" class=\"thumbwrap\"><img src=\"/$collection/$letter/$md5.webp\" /></a>";
+    } else {
+        $thumb = "<a href=\"$link\" class=\"thumbwrap\"><img src=\"/$collection/$letter/$md5.webp\" /></a>";
+    }
+    if(!empty(trim($desc))) {
+        $safe_desc = htmlspecialchars($desc, ENT_QUOTES);
+        $thumb .= "<span class=\"thumbcaption\">$safe_desc</span>";
+    }
+    $thumb .= "</a>";
+    echo "<tr><td>$thumb</td><td><a href=\"$link\">$filename</a>$type_label</td></tr>\r\n";
 }
 
 $stmt->close();

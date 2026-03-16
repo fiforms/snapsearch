@@ -80,9 +80,18 @@
 	  </div>
 	  <div class="searchcontainer">
 		  <div class="searchtile video-thumb" v-for="row in searchresults" @click="setHit(row)">
-		      <a :title="row.filename + ' ' + row.desc">
-			  <img class="searchthumb" v-bind:src="row.src + '/' + row.letter + '/' + row.md5 + '.webp'" @click="setHit(row)" />
-		          <div v-if="row.ftype == 'video'" class="videoicon-overlay">▶</div>
+		      <a :title="row.filename + ' ' + row.desc" class="thumb-link">
+			  <template v-if="row.ftype == 'audio'">
+				<div class="searchthumb audio-thumb-placeholder" @click="setHit(row)">
+					<div class="audio-placeholder-copy">Audio</div>
+					<div class="audioicon-overlay">♪</div>
+				</div>
+			  </template>
+			  <template v-else>
+				<img class="searchthumb" v-bind:src="row.src + '/' + row.letter + '/' + row.md5 + '.webp'" @click="setHit(row)" />
+		                <div v-if="row.ftype == 'video'" class="videoicon-overlay">▶</div>
+			  </template>
+		          <div v-if="thumbnailLabel(row)" class="thumb-caption">{{thumbnailLabel(row)}}</div>
 		      </a>
 		  </div>
 	  </div>
@@ -98,7 +107,17 @@
 		      </button>
 	      </div>
 	      <div class="lightboxmedia">
-		      <div v-show="!isVideoReady" class="video-thumb" @click="maybePlayVideo">
+		      <div v-if="hit.ftype == 'image'" class="media-still">
+	                  <img v-bind:src="hit.src + '/' + hit.letter + '/' + hit.md5 + '.768.webp'" />
+		      </div>
+		      <div v-else-if="hit.ftype == 'audio'" class="audio-panel">
+	                  <div class="audio-artwork audio-thumb-placeholder audio-thumb-placeholder-large">
+		                  <div class="audio-placeholder-copy">Audio</div>
+		                  <div class="audioicon-overlay audioicon-overlay-large">♪</div>
+	                  </div>
+		                  <audio v-if="hit.medurl" ref="audioPlayer" class="audio-player" v-bind:src="hit.medurl" controls autoplay preload="metadata"></audio>
+		      </div>
+		      <div v-else v-show="!isVideoReady" class="video-thumb" @click="maybePlayVideo">
 	                  <img v-bind:src="hit.src + '/' + hit.letter + '/' + hit.md5 + '.768.webp'" />
 			  <div v-if="hit.ftype == 'video'" class="play-overlay" @click.stop="playVideo">▶</div>
 		      </div>
@@ -109,9 +128,9 @@
 				<thead><tr><td colspan="2">
 					<div class="media-actions">
 						<div class="media-actions-left">
-							<a :href="hit.medurl" v-if="hit.medurl" target="_blank"><button>Download Medium</button></a>
+							<a :href="hit.medurl" v-if="hit.medurl" target="_blank"><button>{{primaryDownloadLabel(hit)}}</button></a>
 							<a v-if="hit.largeurl" :href="hit.largeurl" target="_blank"><button>Download Large</button></a>
-							<a v-if="hit.sourceurl" :href="hit.sourceurl" target="_blank"><button>Source</button></a>
+							<a v-if="hit.sourceurl" :href="hit.sourceurl" target="_blank"><button>{{sourceButtonLabel(hit)}}</button></a>
 							<a :href="hit.meddirlink" v-if="hit.meddirlink" target="_blank"><button>Browse <span v-if="hit.bigdirlink">(Medium)</span></button></a>
 							<a v-if="hit.bigdirlink" :href="hit.bigdirlink" target="_blank"><button>Browse (High Res)</button></a>
 						</div>
@@ -131,7 +150,7 @@
 				    <tr><th>Filename</th><td class="data">{{hit.filename}}</td></tr>
 				    <tr><td colspan="2" class="twocolumn">{{hit.desc}}</td></tr>
 				    <tr><th>Type</th><td class="data">{{hit.arttype}}</td></tr>
-				    <tr><th>Resolution</th><td class="data">{{hit.width}}x{{hit.height}}</td></tr>
+				    <tr v-if="showResolution(hit)"><th>Resolution</th><td class="data">{{hit.width}}x{{hit.height}}</td></tr>
 				    <tr><th>License</th><td class="data">{{hit.license}}</td></tr>
 				    <tr><th>Attribution</th><td class="data">{{hit.attribution}}</td></tr>
 				    <tr><th>Folder</th><td class="data">{{hit.dir}}</td></tr>
@@ -146,6 +165,7 @@
 
 <script>
   import axios from 'axios';
+  import { nextTick } from 'vue';
   
   export default {
     name: 'Snapshots',
@@ -164,6 +184,7 @@
 	collectionPath: [],
 	collections: [
 		{ id: "videos", label: "Video Collection" },
+		{ id: "music", label: "Music & Audio Collection" },
 		{ id: "thumbs", label: "Main Collection" },
 		{ id: "illustrations", label: "Illustration Collection" },
 	],
@@ -247,6 +268,30 @@
 			node = node.children[segment];
 		}
 		return node;
+	},
+	loadCollection(url, sourceId) {
+	    axios
+	      .get(url)
+	      .then(res => {
+		if(!res || !res.data || !Array.isArray(res.data) || res.data.length < 1) {
+			return 1;
+		}
+		for(let i = 0; i < res.data.length; i++) {
+			res.data[i].src = sourceId;
+			this.addArtType(res.data[i].arttype);
+			this.addToCollectionTree(res.data[i].src, this.getRowPath(res.data[i]));
+		}
+		this.snapshots = this.snapshots.concat(res.data);
+		this.updateSearch();
+		this.tryOpenPendingFile();
+		document.getElementById('searchinput').focus();
+	      })
+	      .catch(error => {
+		if(error && error.response && error.response.status === 404) {
+			return;
+		}
+		console.error(`Failed to load collection ${sourceId}:`, error);
+	      });
 	},
 	matchesCollectionFilter(row) {
 		if(!this.collectionfilter) {
@@ -333,6 +378,14 @@
 	    this.isPlaying = false;
 	    this.isVideoReady = false;
 	    this.shareCopied = false;
+	    if(row && row.ftype === "audio" && row.medurl) {
+		    nextTick(() => {
+			    const player = this.$refs.audioPlayer;
+			    if(player && typeof player.play === "function") {
+				    player.play().catch(() => {});
+			    }
+		    });
+	    }
 	},
 	getHitIndex() {
 	    if(!this.hit || !this.searchresults || this.searchresults.length === 0) {
@@ -383,6 +436,36 @@
 	    }
 	    this.isVideoReady = false;
 	    this.isPlaying = true;
+	},
+	showResolution(row) {
+	    return !!row && row.ftype !== "audio";
+	},
+	primaryDownloadLabel(row) {
+	    if(!row) {
+		return "Download";
+	    }
+	    if(row.ftype === "audio") {
+		return "Download Audio";
+	    }
+	    if(row.ftype === "video") {
+		return "Download Medium";
+	    }
+	    return "Download Medium";
+	},
+	sourceButtonLabel(row) {
+	    if(!row) {
+		return "Source";
+	    }
+	    if(row.ftype === "audio") {
+		return "Audio Source";
+	    }
+	    return "Source";
+	},
+	thumbnailLabel(row) {
+	    if(!row || !row.desc) {
+		return "";
+	    }
+	    return row.desc.trim();
 	},
 	onVideoLoaded() {
 	    this.isVideoReady = true;
@@ -561,48 +644,10 @@
 	if(fileFromUrl) {
 	  this.pendingFileHash = fileFromUrl;
 	}
-        axios
-          .get('/videos/snapshots.json')
-          .then(res => {
-			if(!res || !res.data || !Array.isArray(res.data) || res.data.length < 1) {
-				return 1;
-			}
-            for(let i = 0; i < res.data.length; i++) {
-		    res.data[i].src = "videos";
-		    this.addArtType(res.data[i].arttype);
-		    this.addToCollectionTree(res.data[i].src, this.getRowPath(res.data[i]));
-	    }
-            this.snapshots = this.snapshots.concat(res.data);
-			this.updateSearch();
-			this.tryOpenPendingFile();
-            document.getElementById('searchinput').focus();
-          })
-        axios
-          .get('/thumbs/snapshots.json')
-          .then(res => {
-            for(let i = 0; i < res.data.length; i++) {
-		    res.data[i].src = "thumbs";
-		    this.addArtType(res.data[i].arttype);
-		    this.addToCollectionTree(res.data[i].src, this.getRowPath(res.data[i]));
-	    }
-            this.snapshots = this.snapshots.concat(res.data);
-			this.updateSearch();
-			this.tryOpenPendingFile();
-            document.getElementById('searchinput').focus();
-          })
-        axios
-          .get('/illustrations/snapshots.json')
-          .then(res => {
-            for(let i = 0; i < res.data.length; i++) {
-		    res.data[i].src = "illustrations";
-		    this.addArtType(res.data[i].arttype);
-		    this.addToCollectionTree(res.data[i].src, this.getRowPath(res.data[i]));
-	    }
-            this.snapshots = this.snapshots.concat(res.data);
-            this.updateSearch();
-            this.tryOpenPendingFile();
-            document.getElementById('searchinput').focus();
-          })
+	this.loadCollection('/videos/snapshots.json', 'videos');
+	this.loadCollection('/music/snapshots.json', 'music');
+	this.loadCollection('/thumbs/snapshots.json', 'thumbs');
+	this.loadCollection('/illustrations/snapshots.json', 'illustrations');
     },
     mounted: function() {
 	    this.handleKeydown = (event) => {
@@ -840,6 +885,67 @@
 	  text-shadow: 0 0 10px black;
 	  opacity: 0.5;
 	}
+	.audioicon-overlay {
+	  position: absolute;
+	  top: 50%;
+	  left: 50%;
+	  transform: translate(-50%, -50%);
+	  font-size: 40px;
+	  color: white;
+	  text-shadow: 0 0 10px black;
+	  opacity: 0.75;
+	}
+	.audioicon-overlay-large {
+	  font-size: 72px;
+	}
+	.thumb-link {
+	  position: relative;
+	  display: block;
+	  width: 100%;
+	  height: 100%;
+	  overflow: hidden;
+	}
+	.thumb-caption {
+	  position: absolute;
+	  top: 0;
+	  left: 0;
+	  right: 0;
+	  padding: 0.45rem 0.65rem 0.5rem;
+	  background: linear-gradient(180deg, rgba(8, 12, 18, 0.78) 0%, rgba(8, 12, 18, 0.42) 72%, rgba(8, 12, 18, 0) 100%);
+	  color: rgba(245, 248, 252, 0.96);
+	  font-size: 0.8rem;
+	  line-height: 1.2;
+	  white-space: nowrap;
+	  overflow: hidden;
+	  text-overflow: ellipsis;
+	  letter-spacing: 0.01em;
+	  pointer-events: none;
+	}
+	.audio-thumb-placeholder {
+	  position: relative;
+	  width: 100%;
+	  aspect-ratio: 1 / 1;
+	  display: flex;
+	  align-items: center;
+	  justify-content: center;
+	  background:
+	    radial-gradient(circle at top, rgba(84, 120, 163, 0.3), transparent 55%),
+	    linear-gradient(160deg, #172233 0%, #0c1420 100%);
+	  color: #f3f7fb;
+	  overflow: hidden;
+	}
+	.audio-thumb-placeholder-large {
+	  width: min(420px, 72vw);
+	}
+	.audio-placeholder-copy {
+	  position: absolute;
+	  left: 1rem;
+	  bottom: 0.9rem;
+	  font-size: 0.9rem;
+	  letter-spacing: 0.18em;
+	  text-transform: uppercase;
+	  color: rgba(243, 247, 251, 0.72);
+	}
 	.play-overlay {
 	  position: absolute;
 	  top: 50%;
@@ -861,6 +967,24 @@
 	}
 	.video-thumb img {
 	  display: block;
+	}
+	.media-still {
+	  width: 100%;
+	}
+	.audio-panel {
+	  width: 100%;
+	  display: flex;
+	  flex-direction: column;
+	  align-items: center;
+	  gap: 1rem;
+	  padding: 1.5rem 1.5rem 1.25rem;
+	  box-sizing: border-box;
+	}
+	.audio-artwork {
+	  position: relative;
+	}
+	.audio-player {
+	  width: min(560px, 100%);
 	}
 	.media-actions {
 	  display: flex;
@@ -998,6 +1122,17 @@
 	  }
 	  .media-actions {
 	    align-items: flex-start;
+	  }
+	  .audio-panel {
+	    padding: 1rem;
+	  }
+	  .audio-artwork {
+	    width: min(100%, 320px);
+	  }
+	  .thumb-caption {
+	    font-size: 0.74rem;
+	    padding-left: 0.55rem;
+	    padding-right: 0.55rem;
 	  }
 	}
 </style>

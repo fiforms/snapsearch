@@ -42,25 +42,46 @@ $stmt->fetch();
 <?php
 
     $interactive = "/#q=".urlencode($filename);
+    $download_label = ($ftype === "audio") ? "Download Audio" : "Download Medium";
+    $source_label = ($ftype === "audio") ? "Audio Source" : "Source";
     echo "<a href=\"/browse/folder/$collection/$dirurl\">Return to folder listing for $dir</a><br /><a href=\"/browse/\">Return to All Folder Listing</a><br />";
-    echo "<a href=\"$interactive\"><img src=\"/$collection/$letter/$md5.768.webp\" /></a>";
+    if($ftype === "audio") {
+        echo "<a href=\"$interactive\" class=\"audiocover audiocover-large\"><span class=\"audiocopy\">Audio</span><span class=\"audionote\">♪</span></a>";
+    } else {
+        echo "<a href=\"$interactive\"><img src=\"/$collection/$letter/$md5.768.webp\" /></a>";
+    }
+    if($ftype === "audio" && !empty($medurl)) {
+        echo "<br /><audio controls preload=\"metadata\" src=\"$medurl\" class=\"audioplayer\"></audio>";
+    }
     echo "<table class=\"imageinfo\"><tbody>";
     echo "<tr><th>Filename</th><td>$filename</td></tr>";
     echo "<tr><th>Desc</th><td>$desc</td></tr>";
     echo "<tr><th>Type </th><td>$arttype </td></tr>";
-    echo "<tr><th>Resolution </th><td>$width x $height </td></tr>";
+    if($ftype !== "audio") {
+        echo "<tr><th>Resolution </th><td>$width x $height </td></tr>";
+    }
     echo "<tr><th>License </th><td>$license </td></tr>";
     echo "<tr><th>Attribution </th><td>$attribution </td></tr>";
     echo "<tr><th>Collection </th><td>$collection </td></tr>";
     echo "<tr><th>Folder </th><td><a href=\"/browse/folder/$collection/$dirurl\">$dir</a> </td></tr>";
-    echo "<tr><td colspan=\"2\">
-	    <a href=\"$medurl\">Download Medium</a><br />
-	    <a href=\"$largeurl\">Download Large</a><br />
-	    <a href=\"$sourceurl\">Image Source</a><br />
-	    <a href=\"$meddirlink\">Browse Folder (Medium Resolution)</a><br />
-	    <a href=\"$bigdirlink\">Browse Folder (High Resolution</a><br />
-	    <a href=\"$interactive\">Show in Interactive Search</a>
-	    </td></tr>";
+    echo "<tr><td colspan=\"2\">";
+    if(!empty($medurl)) {
+        echo "<a href=\"$medurl\">$download_label</a><br />";
+    }
+    if(!empty($largeurl)) {
+        echo "<a href=\"$largeurl\">Download Large</a><br />";
+    }
+    if(!empty($sourceurl)) {
+        echo "<a href=\"$sourceurl\">$source_label</a><br />";
+    }
+    if(!empty($meddirlink)) {
+        echo "<a href=\"$meddirlink\">Browse Folder (Medium Resolution)</a><br />";
+    }
+    if(!empty($bigdirlink)) {
+        echo "<a href=\"$bigdirlink\">Browse Folder (High Resolution)</a><br />";
+    }
+    echo "<a href=\"$interactive\">Show in Interactive Search</a>";
+    echo "</td></tr>";
 
 $stmt->close();
 

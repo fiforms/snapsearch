@@ -94,6 +94,39 @@ get_video_desc() {
     esac
 }
 
+get_audio_desc() {
+    local file="$1"
+    local md5="$2"
+    local tdir="$thumbs_directory/${md5:0:1}"
+    local title
+    local artist
+    local comment
+    local desc
+
+    if [[ -e "$tdir/$md5.txt" ]]; then
+        desc=$(cat "$tdir/$md5.txt")
+    else
+        mkdir -p "$tdir"
+        title=$(ffprobe -v quiet -show_entries format_tags=title -of default=noprint_wrappers=1:nokey=1 "$file")
+        artist=$(ffprobe -v quiet -show_entries format_tags=artist -of default=noprint_wrappers=1:nokey=1 "$file")
+        comment=$(ffprobe -v quiet -show_entries format_tags=comment -of default=noprint_wrappers=1:nokey=1 "$file")
+
+        if [[ -n "$title" && -n "$artist" ]]; then
+            desc="$title - $artist"
+        elif [[ -n "$title" ]]; then
+            desc="$title"
+        elif [[ -n "$comment" ]]; then
+            desc="$comment"
+        else
+            desc=""
+        fi
+
+        printf '%s\n' "$desc" > "$tdir/$md5.txt"
+    fi
+
+    echo -n "$desc"
+}
+
 urlencode() {
 	jq -rn --arg x "$1" '$x|@uri'
 }
@@ -120,7 +153,7 @@ process_directory() {
 
     
     # Loop through files in the directory
-    find "$dir" -maxdepth 1 -type f \( -iname "*.jpg" -o -iname "*.png" -o -iname "*.webp" -o -iname "*.mp4" -o -iname "*.webm" \) -print0 |
+    find "$dir" -maxdepth 1 -type f \( -iname "*.jpg" -o -iname "*.png" -o -iname "*.webp" -o -iname "*.mp4" -o -iname "*.webm" -o -iname "*.mp3" \) -print0 |
 	        while IFS= read -r -d '' file; do
 
 	# Skip .4k.webm files if a corresponding .mp4 exists
@@ -147,7 +180,8 @@ process_directory() {
 	fi
         license=$(get_copyright "$file" license)
         attribution=$(get_copyright "$file" attribution)
-        if [[ "$filename" =~ \.mp4$ || "$filename" =~ \.webm$ ]]; then
+        lower_filename="${filename,,}"
+        if [[ "$lower_filename" =~ \.mp4$ || "$lower_filename" =~ \.webm$ ]]; then
             make_video_thumb "$file" "$md5"
             desc=$(get_video_desc "$file" "$md5" desc)
             width=$(get_video_desc "$file" "$md5" width)
@@ -169,6 +203,21 @@ process_directory() {
                    bigdirlink=""
                fi
             ftype="video"
+        elif [[ "$lower_filename" =~ \.mp3$ ]]; then
+            desc=$(get_audio_desc "$file" "$md5")
+            width="0"
+            height="0"
+            mfilename=$filename
+            if [[ "$med_baseurl" == "" ]]; then
+                medurl=""
+                meddirlink=""
+            else
+                medurl="$med_baseurl/download?path=$(urlencode "/$dir")&files=$(urlencode "$mfilename")"
+                meddirlink="$med_baseurl?path=$(urlencode "/$dir")"
+            fi
+            largeurl=""
+            bigdirlink=""
+            ftype="audio"
         else
             make_thumb "$file" "$md5"
             desc=$(get_desc "$file" "$md5" desc)
