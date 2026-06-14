@@ -131,6 +131,29 @@ urlencode() {
 	jq -rn --arg x "$1" '$x|@uri'
 }
 
+# Build a public-share download URL.
+# Nextcloud 31 removed the legacy "/download?path=DIR&files=FILE" endpoint and
+# replaced it with a WebDAV path: /public.php/dav/files/TOKEN/DIR/FILE
+# $1 = WebDAV base url (may be empty), $2 = relative dir, $3 = filename
+dav_download_url() {
+	local davbase="$1" reldir="$2" fn="$3"
+	[[ -z "$davbase" ]] && return
+	if [[ -z "$reldir" || "$reldir" == "." ]]; then
+		printf '%s' "$davbase/$(urlencode "$fn")"
+	else
+		printf '%s' "$davbase/$(urlencode "/$reldir")/$(urlencode "$fn")"
+	fi
+}
+
+# Build a public-share folder-browse link.
+# Nextcloud 31's new front-end uses the "dir" query parameter (formerly "path").
+# $1 = share base url (may be empty), $2 = relative dir
+share_dir_link() {
+	local base="$1" reldir="$2"
+	[[ -z "$base" ]] && return
+	printf '%s' "$base?dir=$(urlencode "/$reldir")"
+}
+
 
 # Function to process a directory
 process_directory() {
@@ -187,8 +210,8 @@ process_directory() {
             width=$(get_video_desc "$file" "$md5" width)
             height=$(get_video_desc "$file" "$md5" height)
 	    mfilename=$filename
-	    medurl="$med_baseurl/download?path=`urlencode "/$dir"`&files=`urlencode "$mfilename"`" 
-	    meddirlink="$med_baseurl?path=`urlencode "/$dir"`" 
+	    medurl="$(dav_download_url "$med_davurl" "$dir" "$mfilename")"
+	    meddirlink="$(share_dir_link "$med_baseurl" "$dir")"
 	    # Calculate large url if .4k.webm version exists
 	    #
 	        # Calculate large URL if .4k.webm version exists
@@ -196,7 +219,7 @@ process_directory() {
                highres_file="$base_directory/$dir/${basemp4}.4k.webm"
                if [[ -f "$highres_file" ]]; then
                    highfilename="${basemp4}.4k.webm"
-                   largeurl="$high_baseurl/download?path=$(urlencode "/$dir")&files=$(urlencode "$highfilename")"
+                   largeurl="$(dav_download_url "$high_davurl" "$dir" "$highfilename")"
                    bigdirlink="$meddirlink"
                else
                    largeurl=""
@@ -212,8 +235,8 @@ process_directory() {
                 medurl=""
                 meddirlink=""
             else
-                medurl="$med_baseurl/download?path=$(urlencode "/$dir")&files=$(urlencode "$mfilename")"
-                meddirlink="$med_baseurl?path=$(urlencode "/$dir")"
+                medurl="$(dav_download_url "$med_davurl" "$dir" "$mfilename")"
+                meddirlink="$(share_dir_link "$med_baseurl" "$dir")"
             fi
             largeurl=""
             bigdirlink=""
@@ -230,11 +253,11 @@ process_directory() {
 	        medurl=""
 	        meddirlink=""
 	    else
-	        medurl="$med_baseurl/download?path=`urlencode "/$dir"`&files=`urlencode "$mfilename"`" 
-	        meddirlink="$med_baseurl?path=`urlencode "/$dir"`" 
+	        medurl="$(dav_download_url "$med_davurl" "$dir" "$mfilename")"
+	        meddirlink="$(share_dir_link "$med_baseurl" "$dir")"
 	    fi
-	    largeurl="$high_baseurl/download?path=`urlencode "/$dir"`&files=`urlencode "$filename"`" 
-	    bigdirlink="$high_baseurl?path=`urlencode "/$dir"`" 
+	    largeurl="$(dav_download_url "$high_davurl" "$dir" "$filename")"
+	    bigdirlink="$(share_dir_link "$high_baseurl" "$dir")"
 	    if [[ "$file" =~ "XX" ]]; then
 	        medurl=""
 	        meddirlink=""
@@ -324,5 +347,9 @@ thumbs_directory=$(realpath "$2")
 default_type="$3"
 med_baseurl=`cat "$base_directory/med_baseurl.md"`
 high_baseurl=`cat "$base_directory/high_baseurl.md"`
+# Nextcloud 31+ serves public-share downloads from a WebDAV endpoint. Derive it
+# from the share link by swapping "/index.php/s/TOKEN" -> "/public.php/dav/files/TOKEN".
+med_davurl="${med_baseurl/\/index.php\/s\//\/public.php\/dav\/files\/}"
+high_davurl="${high_baseurl/\/index.php\/s\//\/public.php\/dav\/files\/}"
 echo Starting
 main "$base_directory"

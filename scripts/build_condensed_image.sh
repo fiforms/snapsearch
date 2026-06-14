@@ -50,7 +50,7 @@ find "$input_dir" -type f \( -iname "*.jpg" -o -iname "*.png" -o -iname "*.webp"
     origlink="$output_dir/$dirpath/0000 Link to Original Files.md"
     if ! [[ -e "$origlink" ]]; then
         # Create a file for documentation to link to original size images
-        echo -n $share_baseuri?path=%2F > "$origlink"
+        echo -n $share_baseuri?dir=%2F > "$origlink"
         jq -rn --arg x "$dirpath" '$x|@uri' >> "$origlink"
     fi
     if [[ "$relative_path" =~ \.md$ ]] || [[ "$relative_path" =~ \.kml$ ]] || [[ "$relative_path" =~ \.mp4$ ]]; then
