@@ -32,10 +32,10 @@ make_video_thumb() {
     local tdir="$thumbs_directory/${md5:0:1}"
     mkdir -p "$tdir"
     if [[ ! -e "$tdir/$md5.webp" ]]; then
-        ffmpeg -y -i "$video" -ss 00:00:01.000 -vframes 1 -vf "scale=256:-1" "$tdir/$md5.webp"
+        ffmpeg -nostdin -loglevel error -y -i "$video" -ss 00:00:01.000 -vframes 1 -vf "scale=256:-1" "$tdir/$md5.webp"
     fi
     if [[ ! -e "$tdir/$md5.768.webp" ]]; then
-        ffmpeg -y -i "$video" -ss 00:00:01.000 -vframes 1 -vf "scale=768:-1" "$tdir/$md5.768.webp"
+        ffmpeg -nostdin -loglevel error -y -i "$video" -ss 00:00:01.000 -vframes 1 -vf "scale=768:-1" "$tdir/$md5.768.webp"
     fi
 }
 
